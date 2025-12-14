@@ -85,6 +85,10 @@ export default {
                 <div class="center">
                     Pascals Rezepte
                 </div>
+                <div class="right">
+                    <ons-button onclick="editRecipe()" modifier="quiet"><ons-icon icon="md-edit"></ons-icon></ons-button>
+                    <ons-button onclick="copyRecipe()" modifier="quiet"><ons-icon icon="fa-clipboard"></ons-icon></ons-button>
+                </div>
             </ons-toolbar>
             <ons-card>
                 <div class="title" id="recipe-title"></div>
@@ -118,7 +122,7 @@ export default {
                 <div class="left">
                     <ons-button onclick="cancelAddRecipe()" modifier="quiet">Abbrechen</ons-button>
                 </div>
-                <div class="center">
+                <div class="center" id="add-recipe-title">
                     Neues Rezept
                 </div>
                 <div class="right">
@@ -197,6 +201,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 let wakeLock = null;
 
+let editData = null;
+
 function requestWakeLock() {
     if ('wakeLock' in navigator) {
         navigator.wakeLock.request('screen').then(lock => {
@@ -270,13 +276,46 @@ function saveRecipe() {
     const zutaten = document.getElementById('recipe-zutaten-input').value;
     const zubereitung = document.getElementById('recipe-zubereitung-input').value;
     if (name && zutaten && zubereitung) {
+        const data = document.getElementById('navigator').topPage.data;
+        const id = data && data.id ? data.id : Date.now().toString();
+        const recipe = { id, name, title: name, bemerkung, zutaten, zubereitung };
         fetch('/api/recipes', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, bemerkung, zutaten, zubereitung })
+            body: JSON.stringify(recipe)
         }).then(() => {
-            document.getElementById('navigator').popPage();
-            loadRecipes();
+            const navigator = document.getElementById('navigator');
+            const data = navigator.topPage.data;
+            const isEdit = data && data.id;
+            const recipe = { id, name, title: name, bemerkung, zutaten, zubereitung };
+
+            navigator.popPage().then(() => {
+                const currentPage = navigator.topPage;
+                if (isEdit) {
+                    // Update the recipe view DOM with new data
+                    currentPage.data = recipe;
+                    const titleEl = currentPage.querySelector('#recipe-title');
+                    const bemEl = currentPage.querySelector('#recipe-bemerkung');
+                    const zutatenEl = currentPage.querySelector('#recipe-zutaten');
+                    const zubereitungEl = currentPage.querySelector('#recipe-zubereitung');
+                    if (titleEl) titleEl.textContent = recipe.name;
+                    if (bemEl) bemEl.textContent = recipe.bemerkung;
+                    if (zutatenEl) zutatenEl.textContent = recipe.zutaten;
+                    if (zubereitungEl) zubereitungEl.textContent = recipe.zubereitung;
+                } else if (currentPage.id === 'home') {
+                    // New recipe: push the recipe view
+                    navigator.pushPage('recipe-view', {
+                        data: {
+                            id: recipe.id,
+                            title: recipe.name,
+                            bemerkung: recipe.bemerkung,
+                            zutaten: recipe.zutaten,
+                            zubereitung: recipe.zubereitung
+                        }
+                    });
+                }
+                loadRecipes();
+            });
         });
     } else {
         alert('Bitte füllen Sie alle erforderlichen Felder aus.');
@@ -289,22 +328,68 @@ function viewRecipe(id) {
         .then(recipe => {
             document.getElementById('navigator').pushPage('recipe-view', {
                 data: {
-                    title: recipe.name || recipe.title,
+                    id: recipe.id,
+                    title: recipe.name,
                     bemerkung: recipe.bemerkung || '',
-                    zutaten: recipe.zutaten || recipe.ingredients,
-                    zubereitung: recipe.zubereitung || recipe.instructions
+                    zutaten: recipe.zutaten,
+                    zubereitung: recipe.zubereitung
                 }
             });
         });
 }
 
+function editRecipe() {
+    const data = document.getElementById('navigator').topPage.data;
+    document.getElementById('navigator').pushPage('add-recipe', {
+        data: data
+    });
+}
+
+function copyRecipe() {
+    const data = document.getElementById('navigator').topPage.data;
+    if (data) {
+        const text = \`Titel: \${ data.title || '' }\\n\\nBemerkung: \${ data.bemerkung || '' }\\n\\nZutaten: \\n\${ data.zutaten || '' }\\n\\nZubereitung: \\n\${ data.zubereitung || '' }\`;
+        navigator.clipboard.writeText(text).then(() => {
+            ons.notification.toast('Rezept kopiert!', { timeout: 2000 });
+        });
+    }
+}
+
 document.addEventListener('init', function(event) {
-    if (event.target.data) {
-        const data = event.target.data;
-        document.getElementById('recipe-title').textContent = data.title;
-        document.getElementById('recipe-bemerkung').textContent = data.bemerkung;
-        document.getElementById('recipe-zutaten').textContent = data.zutaten;
-        document.getElementById('recipe-zubereitung').textContent = data.zubereitung;
+    const page = event.target;
+    const data = page.data || {};
+
+    // Detect the recipe view by its fields and populate.
+    const viewTitle = page.querySelector('#recipe-title');
+    if (viewTitle) {
+        viewTitle.textContent = data.title || '';
+        page.querySelector('#recipe-bemerkung').textContent = data.bemerkung || '';
+        page.querySelector('#recipe-zutaten').textContent = data.zutaten || '';
+        page.querySelector('#recipe-zubereitung').textContent = data.zubereitung || '';
+        return;
+    }
+
+    // Detect the add/edit form by its inputs and populate accordingly.
+    const titleField = page.querySelector('#recipe-title-input');
+    if (titleField) {
+        const bemerkungField = page.querySelector('#recipe-bemerkung-input');
+        const zutatenField = page.querySelector('#recipe-zutaten-input');
+        const zubereitungField = page.querySelector('#recipe-zubereitung-input');
+        const heading = page.querySelector('#add-recipe-title');
+
+        if (data.id) {
+            heading.textContent = 'Rezept bearbeiten';
+            titleField.value = data.title || '';
+            bemerkungField.value = data.bemerkung || '';
+            zutatenField.value = data.zutaten || '';
+            zubereitungField.value = data.zubereitung || '';
+        } else {
+            heading.textContent = 'Neues Rezept';
+            titleField.value = '';
+            bemerkungField.value = '';
+            zutatenField.value = '';
+            zubereitungField.value = '';
+        }
     }
 });
             `, {
@@ -340,7 +425,7 @@ document.addEventListener('init', function(event) {
                 });
             } else if (request.method === 'POST') {
                 const recipe = await request.json();
-                const id = Date.now().toString();
+                const id = recipe.id || Date.now().toString();
                 recipe.id = id;
                 await env.RECIPES.put(id, JSON.stringify(recipe));
                 return new Response(JSON.stringify({ success: true }), {
