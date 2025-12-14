@@ -22,11 +22,13 @@ export default {
     <ons-navigator id="navigator">
         <ons-page id="home">
             <ons-toolbar>
-                <div class="center">Pascals Rezepte</div>
+                <div class="center">
+                    Pascals Rezepte
+                </div>
             </ons-toolbar>
-            <ons-list id="recipe-list">
+            <div id="recipe-list" style="display: flex; flex-wrap: wrap; padding: 10px;">
                 <!-- Recipes will be loaded here -->
-            </ons-list>
+            </div>
             <ons-fab position="bottom right" onclick="addRecipe()">
                 <ons-icon icon="md-plus"></ons-icon>
             </ons-fab>
@@ -39,7 +41,12 @@ export default {
                 <div class="left">
                     <ons-back-button>Zurück</ons-back-button>
                 </div>
-                <div class="center">Pascals Rezepte</div>
+                <div class="center">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-right: 8px; vertical-align: middle;">
+                        <path d="M18 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V4C20 2.9 19.1 2 18 2ZM6 4H11V12L8.5 10.5L6 12V4Z" fill="currentColor"/>
+                    </svg>
+                    Pascals Rezepte
+                </div>
             </ons-toolbar>
             <ons-card>
                 <div class="title" id="recipe-title"></div>
@@ -104,6 +111,12 @@ export default {
             return new Response(`
 document.addEventListener('DOMContentLoaded', function() {
     loadRecipes();
+    // Request wake lock to keep screen on
+    if ('wakeLock' in navigator) {
+        navigator.wakeLock.request('screen').catch(function(err) {
+            console.log('Wake lock request failed:', err);
+        });
+    }
 });
 
 function loadRecipes() {
@@ -114,7 +127,7 @@ function loadRecipes() {
             list.innerHTML = '';
             recipes.forEach(recipe => {
                 const item = ons.createElement(\`
-                    <ons-list-item modifier="chevron" tappable onclick="viewRecipe('\${recipe.id}')">
+                    <ons-list-item modifier="chevron" inset tappable onclick="viewRecipe('\${recipe.id}')">
                         \${recipe.name}
                     </ons-list-item>
                 \`);

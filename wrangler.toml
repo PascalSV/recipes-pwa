@@ -2,8 +2,15 @@ name = "recipes-pwa"
 main = "src/index.js"
 compatibility_date = "2023-12-01"
 
+[site]
+bucket = "."
+
 [[kv_namespaces]]
 binding = "RECIPES"
 id = "f1eb2b0e2f10441c8538bda5308a2570"
 # Optional: preview_id used when running `wrangler dev` for local dev
 preview_id = "b96f8ce2534a42d5b2457298d0838442"  # Replace with actual KV namespace ID
+
+[[routes]]
+pattern = "recipes.everyday-apps.org/*"
+zone_id = "562991781207dfc9e64451bec4e2f17b"  # Replace with the zone ID for everyday-apps.org
