@@ -17,11 +17,14 @@ export default {
         .card__title, .toolbar__title { font-size: 20px; }
         .list-item__title { font-size: 18px; }
         .list { background-color: white; }
+        .list-item { background-color: white; }
         #login { display: block; }
         #navigator { display: none; }
         .login-page { background-color: #f8f9fa; min-height: 100vh; }
         .login-content { max-width: 400px; margin: 0 auto; padding: 40px 20px; text-align: center; }
         .login-icon { text-align: center; margin-bottom: 20px; }
+        ::-webkit-scrollbar { display: none; }
+        scrollbar-width: none;
     </style></head>
 <body>
     <div id="login" class="login-page">
@@ -58,6 +61,12 @@ export default {
             <ons-fab position="bottom right" onclick="addRecipe()">
                 <ons-icon icon="md-plus"></ons-icon>
             </ons-fab>
+            <div style="padding: 10px; text-align: center;">
+                <label style="font-size: 16px;">
+                    <input type="checkbox" id="wake-lock-toggle" onchange="toggleWakeLock(this.checked)" style="margin-right: 8px;">
+                    Keep screen on
+                </label>
+            </div>
         </ons-page>
     </ons-navigator>
 
@@ -138,13 +147,49 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('navigator').style.display = 'block';
         loadRecipes();
     }
-    // Request wake lock to keep screen on
+    // Check wake lock support and set initial state
     if ('wakeLock' in navigator) {
-        navigator.wakeLock.request('screen').catch(function(err) {
+        const toggle = document.getElementById('wake-lock-toggle');
+        if (toggle) {
+            toggle.checked = localStorage.getItem('wakeLockEnabled') === 'true';
+            if (toggle.checked) {
+                requestWakeLock();
+            }
+        }
+    } else {
+        // Hide toggle if not supported
+        const toggle = document.getElementById('wake-lock-toggle');
+        if (toggle) {
+            toggle.parentElement.style.display = 'none';
+        }
+    }
+});
+
+let wakeLock = null;
+
+function requestWakeLock() {
+    if ('wakeLock' in navigator) {
+        navigator.wakeLock.request('screen').then(lock => {
+            wakeLock = lock;
+            console.log('Wake lock acquired');
+        }).catch(err => {
             console.log('Wake lock request failed:', err);
         });
     }
-});
+}
+
+function toggleWakeLock(checked) {
+    localStorage.setItem('wakeLockEnabled', checked);
+    if (checked) {
+        requestWakeLock();
+    } else {
+        if (wakeLock) {
+            wakeLock.release();
+            wakeLock = null;
+            console.log('Wake lock released');
+        }
+    }
+}
 
 function login() {
     const password = document.getElementById('password').value;
