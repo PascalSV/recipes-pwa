@@ -1,0 +1,9 @@
+name = "recipes-pwa"
+main = "src/index.js"
+compatibility_date = "2023-12-01"
+
+[[kv_namespaces]]
+binding = "RECIPES"
+id = "f1eb2b0e2f10441c8538bda5308a2570"
+# Optional: preview_id used when running `wrangler dev` for local dev
+preview_id = "b96f8ce2534a42d5b2457298d0838442"  # Replace with actual KV namespace ID

@@ -1,0 +1,12 @@
+{
+    "name": "recipes-pwa",
+    "version": "1.0.0",
+    "description": "PWA recipes app for cloudflare",
+    "scripts": {
+        "dev": "wrangler dev --remote",
+        "deploy": "wrangler deploy"
+    },
+    "devDependencies": {
+        "wrangler": "^4.54.0"
+    }
+}

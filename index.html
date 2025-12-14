@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipes PWA</title>
+    <link rel="stylesheet" href="https://unpkg.com/onsenui/css/onsenui.css">
+    <link rel="stylesheet" href="https://unpkg.com/onsenui/css/onsen-css-components.min.css">
+    <link rel="manifest" href="manifest.json">
+    <script src="https://unpkg.com/onsenui/js/onsenui.min.js"></script>
+</head>
+<body>
+    <ons-navigator id="navigator">
+        <ons-page id="home">
+            <ons-toolbar>
+                <div class="center">Recipes</div>
+            </ons-toolbar>
+            <ons-list id="recipe-list">
+                <!-- Recipes will be loaded here -->
+            </ons-list>
+            <ons-fab position="bottom right" onclick="addRecipe()">
+                <ons-icon icon="md-plus"></ons-icon>
+            </ons-fab>
+        </ons-page>
+    </ons-navigator>
+
+    <script src="app.js"></script>
+</body>
+</html>
