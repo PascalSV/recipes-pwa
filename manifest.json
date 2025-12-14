@@ -1,5 +1,7 @@
 {
-    "name": "Recipes PWA",
+    "name": "Rezepte PWA",
+    "description": "Pascal's Rezepte-App",
+    "orientation": "portrait",
     "short_name": "Recipes",
     "start_url": "/",
     "display": "standalone",
