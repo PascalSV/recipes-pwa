@@ -62,6 +62,10 @@ export default {
                     </ons-button>
                 </div>
             </ons-toolbar>
+            <div style="position: relative; margin: 10px;">
+                <ons-search-input id="recipe-search" placeholder="Nach Rezept suchen..." style="width: 100%; padding-right: 40px;"></ons-search-input>
+                <ons-icon id="clear-search" icon="md-close" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; display: none; font-size: 20px;"></ons-icon>
+            </div>
             <div id="recipe-list" style="display: flex; flex-wrap: wrap; padding: 10px;">
                 <!-- Recipes will be loaded here -->
             </div>
@@ -203,6 +207,8 @@ let wakeLock = null;
 
 let editData = null;
 
+let allRecipes = [];
+
 function requestWakeLock() {
     if ('wakeLock' in navigator) {
         navigator.wakeLock.request('screen').then(lock => {
@@ -249,17 +255,67 @@ function loadRecipes() {
     fetch('/api/recipes')
         .then(response => response.json())
         .then(recipes => {
-            const list = document.getElementById('recipe-list');
-            list.innerHTML = '';
-            recipes.forEach(recipe => {
-                const item = ons.createElement(\`
-                    <ons-list-item modifier="chevron" inset tappable onclick="viewRecipe('\${recipe.id}')">
-                        \${recipe.name}
-                    </ons-list-item>
-                \`);
-                list.appendChild(item);
-            });
+            allRecipes = recipes.sort((a, b) => a.name.localeCompare(b.name));
+            displayRecipes(allRecipes);
+            // Initialize search input
+            const searchInput = document.getElementById('recipe-search');
+            const clearIcon = document.getElementById('clear-search');
+            if (searchInput && clearIcon) {
+                searchInput.value = '';
+                searchInput.addEventListener('input', performSearch);
+                clearIcon.addEventListener('click', clearSearch);
+            }
         });
+}
+
+function clearSearch() {
+    const searchInput = document.getElementById('recipe-search');
+    const clearIcon = document.getElementById('clear-search');
+    if (searchInput) {
+        searchInput.value = '';
+        clearIcon.style.display = 'none';
+        displayRecipes(allRecipes);
+    }
+}
+
+function performSearch(event) {
+    const searchTerm = event.target.value.trim().toLowerCase();
+    const clearIcon = document.getElementById('clear-search');
+    
+    // Show/hide clear icon based on input
+    if (clearIcon) {
+        clearIcon.style.display = searchTerm.length > 0 ? 'block' : 'none';
+    }
+    
+    if (searchTerm.length < 3) {
+        displayRecipes(allRecipes);
+    } else {
+        const filtered = allRecipes.filter(recipe => 
+            recipe.name.toLowerCase().includes(searchTerm)
+        );
+        displayRecipes(filtered);
+    }
+}
+
+function displayRecipes(recipes) {
+    const list = document.getElementById('recipe-list');
+    list.innerHTML = '';
+    recipes.forEach((recipe, index) => {
+        let borderRadius = '';
+        if (recipes.length === 1) {
+            borderRadius = 'border-radius: 8px;';
+        } else if (index === 0) {
+            borderRadius = 'border-top-left-radius: 8px; border-top-right-radius: 8px;';
+        } else if (index === recipes.length - 1) {
+            borderRadius = 'border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;';
+        }
+        const item = ons.createElement(\`
+            <ons-list-item modifier="chevron" inset tappable onclick="viewRecipe('\${recipe.id}')" style="\${borderRadius} overflow: hidden;">
+                \${recipe.name}
+            </ons-list-item>
+        \`);
+        list.appendChild(item);
+    });
 }
 
 function addRecipe() {
