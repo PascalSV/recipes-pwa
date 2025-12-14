@@ -20,7 +20,7 @@ export default {
         .list-item { background-color: white; }
         #login { display: block; }
         #navigator { display: none; }
-        .login-page { background-color: #f8f9fa; min-height: 100vh; }
+        .login-page { background-color: #efeff4; min-height: 100vh; }
         .login-content { max-width: 400px; margin: 0 auto; padding: 40px 20px; text-align: center; }
         .login-icon { text-align: center; margin-bottom: 20px; }
         ::-webkit-scrollbar { display: none; }
@@ -35,16 +35,18 @@ export default {
         </ons-toolbar>
         </br></br>
         <div class="login-content">
-            <div class="login-icon">
-                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M18 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V4C20 2.9 19.1 2 18 2ZM6 4H11V12L8.5 10.5L6 12V4Z" fill="#007bff"/>
-                </svg>
-            </div>
-            <p style="text-align: center; margin-bottom: 30px; color: #666;">Bitte anmelden, um auf die Rezepte zugreifen zu können</p>
-            <ons-input id="username" placeholder="Benutzername" modifier="underbar" style="width: 80%; margin: 0 auto 20px auto; display: block;"></ons-input>
-            <ons-input id="password" type="password" placeholder="Passwort" modifier="underbar" style="width: 80%; margin: 0 auto 10px auto; display: block;"></ons-input>
-            <p id="error-message" style="color: red; font-size: 14px; visibility: hidden; height: 20px; margin: 20px 0;"></p>
-            <ons-button onclick="login()" modifier="large" style="width: 100%;">Anmelden</ons-button>
+            <ons-card>
+                <div class="content">
+                    <div class="login-icon">
+                        <img src="icon-192.jpg" alt="App Icon" style="width: 64px; height: 64px;">
+                    </div>
+                    <p style="text-align: center; margin-bottom: 30px; color: #666;">Bitte anmelden, um auf die Rezepte zugreifen zu können</p>
+                    <ons-input id="username" placeholder="Benutzername" modifier="underbar" style="width: 80%; margin: 0 auto 20px auto; display: block;"></ons-input>
+                    <ons-input id="password" type="password" placeholder="Passwort" modifier="underbar" style="width: 80%; margin: 0 auto 10px auto; display: block;"></ons-input>
+                    <p id="error-message" style="color: red; font-size: 14px; visibility: hidden; height: 20px; margin: 20px 0;"></p>
+                    <ons-button onclick="login()" modifier="large" style="width: 100%;">Anmelden</ons-button>
+                </div>
+            </ons-card>
         </div>
     </div>
 
@@ -54,18 +56,22 @@ export default {
                 <div class="center">
                     Pascals Rezepte
                 </div>
+                <div class="right">
+                    <ons-button onclick="addRecipe()" modifier="quiet">
+                        <ons-icon icon="md-plus"></ons-icon>
+                    </ons-button>
+                </div>
             </ons-toolbar>
             <div id="recipe-list" style="display: flex; flex-wrap: wrap; padding: 10px;">
                 <!-- Recipes will be loaded here -->
             </div>
-            <ons-fab position="bottom right" onclick="addRecipe()">
-                <ons-icon icon="md-plus"></ons-icon>
-            </ons-fab>
             <div style="padding: 10px; text-align: center;">
                 <label style="font-size: 16px;">
                     <input type="checkbox" id="wake-lock-toggle" onchange="toggleWakeLock(this.checked)" style="margin-right: 8px;">
                     Keep screen on
                 </label>
+                <br>
+                <ons-button onclick="logoff()" modifier="quiet" style="margin-top: 10px;">Abmelden</ons-button>
             </div>
         </ons-page>
     </ons-navigator>
@@ -101,6 +107,30 @@ export default {
                             <div id="recipe-zubereitung" style="white-space: pre-wrap;"></div>
                         </div>
                     </ons-card>
+                </div>
+            </ons-card>
+        </ons-page>
+    </template>
+
+    <template id="add-recipe">
+        <ons-page>
+            <ons-toolbar>
+                <div class="left">
+                    <ons-button onclick="cancelAddRecipe()" modifier="quiet">Abbrechen</ons-button>
+                </div>
+                <div class="center">
+                    Neues Rezept
+                </div>
+                <div class="right">
+                    <ons-button onclick="saveRecipe()" modifier="quiet">Speichern</ons-button>
+                </div>
+            </ons-toolbar>
+            <ons-card>
+                <div class="content" style="padding: 20px;">
+                    <ons-input id="recipe-title-input" placeholder="Titel" modifier="underbar" style="margin-bottom: 20px;"></ons-input>
+                    <textarea id="recipe-bemerkung-input" placeholder="Bemerkungen" class="textarea textarea--transparent" rows="3" style="width: 100%; margin-bottom: 20px; border: none; border-bottom: 1px solid #ccc; padding: 8px 0;"></textarea>
+                    <textarea id="recipe-zutaten-input" placeholder="Zutaten" class="textarea textarea--transparent" rows="5" style="width: 100%; margin-bottom: 20px; border: none; border-bottom: 1px solid #ccc; padding: 8px 0;"></textarea>
+                    <textarea id="recipe-zubereitung-input" placeholder="Zubereitung" class="textarea textarea--transparent" rows="8" style="width: 100%; margin-bottom: 20px; border: none; border-bottom: 1px solid #ccc; padding: 8px 0;"></textarea>
                 </div>
             </ons-card>
         </ons-page>
@@ -178,17 +208,14 @@ function requestWakeLock() {
     }
 }
 
-function toggleWakeLock(checked) {
-    localStorage.setItem('wakeLockEnabled', checked);
-    if (checked) {
-        requestWakeLock();
-    } else {
-        if (wakeLock) {
-            wakeLock.release();
-            wakeLock = null;
-            console.log('Wake lock released');
-        }
+function logoff() {
+    localStorage.removeItem('loggedIn');
+    localStorage.removeItem('wakeLockEnabled');
+    if (wakeLock) {
+        wakeLock.release();
+        wakeLock = null;
     }
+    location.reload();
 }
 
 function login() {
@@ -230,16 +257,29 @@ function loadRecipes() {
 }
 
 function addRecipe() {
-    const name = prompt('Enter recipe name');
-    const zutaten = prompt('Enter zutaten');
-    const zubereitung = prompt('Enter zubereitung');
-    const bemerkung = prompt('Enter bemerkung');
+    document.getElementById('navigator').pushPage('add-recipe');
+}
+
+function cancelAddRecipe() {
+    document.getElementById('navigator').popPage();
+}
+
+function saveRecipe() {
+    const name = document.getElementById('recipe-title-input').value;
+    const bemerkung = document.getElementById('recipe-bemerkung-input').value;
+    const zutaten = document.getElementById('recipe-zutaten-input').value;
+    const zubereitung = document.getElementById('recipe-zubereitung-input').value;
     if (name && zutaten && zubereitung) {
         fetch('/api/recipes', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, zutaten, zubereitung, bemerkung })
-        }).then(() => loadRecipes());
+            body: JSON.stringify({ name, bemerkung, zutaten, zubereitung })
+        }).then(() => {
+            document.getElementById('navigator').popPage();
+            loadRecipes();
+        });
+    } else {
+        alert('Bitte füllen Sie alle erforderlichen Felder aus.');
     }
 }
 

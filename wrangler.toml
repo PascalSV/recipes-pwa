@@ -3,7 +3,7 @@ main = "src/index.js"
 compatibility_date = "2023-12-01"
 
 [site]
-bucket = "."
+bucket = "./"
 
 [[kv_namespaces]]
 binding = "RECIPES"
