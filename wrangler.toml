@@ -4,7 +4,7 @@ compatibility_date = "2024-09-23"
 workers_dev = true
 
 routes = [
-  { pattern = "recipes-pwa.everyday-apps.org", custom_domain = true }
+  { pattern = "recipes-pwa.everyday-apps.org/api/*", zone_name = "everyday-apps.org" }
 ]
 
 [[r2_buckets]]

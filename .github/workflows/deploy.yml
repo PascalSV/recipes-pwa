@@ -45,7 +45,7 @@ jobs:
       - run: npm ci
       - run: npm run build
         env:
-          VITE_API_BASE: https://recipes-pwa.everyday-apps.org
+          VITE_API_BASE: ""
       - run: npx wrangler pages deploy dist --project-name recipes-pwa
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
