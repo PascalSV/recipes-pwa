@@ -193,7 +193,7 @@ All `/api/recipes/*` routes require valid `Authorization: Bearer <token>` header
 ### wrangler.toml
 
 ```toml
-name = "recipes-pwa-api"
+name = "recipes-pwa"
 main = "worker/index.ts"
 compatibility_date = "2024-09-23"
 
