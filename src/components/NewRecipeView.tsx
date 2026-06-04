@@ -146,14 +146,14 @@ export function NewRecipeView({ token }: Props) {
                       : 'text-gray-500 dark:text-gray-400'
                   }`}
                 >
-                  {mode === 'ai' ? '✦ KI-Erkennung' : '⚙ Regelbasiert'}
+                  {mode === 'ai' ? t('newRecipe.parseModeAi') : t('newRecipe.parseModeRegex')}
                 </button>
               ))}
             </div>
             <p className="text-xs text-gray-400 dark:text-gray-500 mt-1.5 px-1">
               {parseMode === 'ai'
-                ? 'Intelligent, versteht komplexe Texte — benötigt Internetverbindung'
-                : 'Schnell & offline — funktioniert am besten mit klar strukturierten Texten'}
+                ? t('newRecipe.parseModeAiHint')
+                : t('newRecipe.parseModeRegexHint')}
             </p>
 
             {parseError && (

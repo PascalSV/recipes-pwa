@@ -14,7 +14,8 @@
   },
   "recipeList": {
     "searchPlaceholder": "Rezepte suchen…",
-    "noResults": "Keine Rezepte gefunden"
+    "noResults": "Keine Rezepte gefunden",
+    "all": "Alle"
   },
   "recipeDetail": {
     "ingredients": "Zutaten",
@@ -38,7 +39,11 @@
     "addIngredient": "Zutat hinzufügen",
     "addStep": "Schritt hinzufügen",
     "save": "Rezept speichern",
-    "remarkPlaceholder": "z. B. abgetropft und abgespült"
+    "remarkPlaceholder": "z. B. abgetropft und abgespült",
+    "parseModeAi": "KI-Erkennung",
+    "parseModeRegex": "Regelbasiert",
+    "parseModeAiHint": "Intelligent, versteht komplexe Texte — benötigt Internetverbindung",
+    "parseModeRegexHint": "Schnell & offline — funktioniert am besten mit klar strukturierten Texten"
   },
   "settings": {
     "title": "Einstellungen",

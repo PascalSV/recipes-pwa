@@ -14,7 +14,8 @@
   },
   "recipeList": {
     "searchPlaceholder": "Search recipes…",
-    "noResults": "No recipes found"
+    "noResults": "No recipes found",
+    "all": "All"
   },
   "recipeDetail": {
     "ingredients": "Ingredients",
@@ -38,7 +39,11 @@
     "addIngredient": "Add Ingredient",
     "addStep": "Add Step",
     "save": "Save Recipe",
-    "remarkPlaceholder": "e.g. drained and rinsed"
+    "remarkPlaceholder": "e.g. drained and rinsed",
+    "parseModeAi": "AI Recognition",
+    "parseModeRegex": "Rule-based",
+    "parseModeAiHint": "Intelligent, handles complex text — requires internet connection",
+    "parseModeRegexHint": "Fast & offline — works best with clearly structured text"
   },
   "settings": {
     "title": "Settings",

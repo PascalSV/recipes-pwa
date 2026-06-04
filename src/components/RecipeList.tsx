@@ -80,7 +80,7 @@ export function RecipeList({ recipes, loading }: Props) {
         {allGroups.length > 0 && (
           <div className="flex gap-2 px-4 pb-3 overflow-x-auto scrollbar-none">
             <CategoryChip
-              label="Alle"
+              label={t('recipeList.all')}
               active={selectedGroup === null}
               onClick={() => setSelectedGroup(null)}
               color={null}
