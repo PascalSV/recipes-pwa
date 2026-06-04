@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import './i18n';
 import { useAuth } from './hooks/useAuth';
 import { useTheme } from './hooks/useTheme';
@@ -11,6 +11,7 @@ import { RecipeList } from './components/RecipeList';
 import { RecipeDetail } from './components/RecipeDetail';
 import { SettingsView } from './components/SettingsView';
 import { NewRecipeView } from './components/NewRecipeView';
+import { BottomTabBar } from './components/BottomTabBar';
 import type { Prefs } from './types';
 
 const DEFAULT_PREFS: Prefs = { language: 'de', theme: 'system', wakeLock: false };
@@ -47,30 +48,38 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route
-          path="/"
-          element={<RecipeListRoute token={session.token} onLogout={logout} />}
-        />
-        <Route path="/recipe/:id" element={<RecipeDetail token={session.token} />} />
-        <Route
-          path="/settings"
-          element={
-            <SettingsView
-              prefs={prefs}
-              onPrefsChange={handlePrefsChange}
-              onLogout={logout}
-              user={session.user}
-            />
-          }
-        />
-        <Route path="/new" element={<NewRecipeView token={session.token} />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route element={<TabLayout />}>
+          <Route path="/" element={<RecipeListRoute token={session.token} />} />
+          <Route path="/recipe/:id" element={<RecipeDetail token={session.token} />} />
+          <Route path="/import" element={<NewRecipeView token={session.token} />} />
+          <Route
+            path="/settings"
+            element={
+              <SettingsView
+                prefs={prefs}
+                onPrefsChange={handlePrefsChange}
+                onLogout={logout}
+                user={session.user}
+              />
+            }
+          />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   );
 }
 
-function RecipeListRoute({ token, onLogout }: { token: string; onLogout: () => void }) {
+function TabLayout() {
+  return (
+    <>
+      <Outlet />
+      <BottomTabBar />
+    </>
+  );
+}
+
+function RecipeListRoute({ token }: { token: string }) {
   const { recipes, loading } = useRecipes(token);
-  return <RecipeList recipes={recipes} loading={loading} onLogout={onLogout} />;
+  return <RecipeList recipes={recipes} loading={loading} />;
 }

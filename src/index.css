@@ -1,21 +1,95 @@
 @import "tailwindcss";
 
-/* Class-based dark mode for Tailwind v4 */
+/* ─── Cooking-theme color palette ─────────────────────────────────────────
+   Remaps Tailwind's gray (→ warm linen grays) and blue (→ terracotta/flame)
+   so every component picks up the new palette without file changes.
+──────────────────────────────────────────────────────────────────────── */
+@theme {
+  /* Warm linen grays */
+  --color-gray-50:  #FDF7F2;
+  --color-gray-100: #F5EBE3;
+  --color-gray-200: #E8D5C8;
+  --color-gray-300: #D4B8A8;
+  --color-gray-400: #B89080;
+  --color-gray-500: #8B6355;
+  --color-gray-600: #6B4A3D;
+  --color-gray-700: #4D3228;
+  --color-gray-750: #3A2218;
+  --color-gray-800: #2A1A0F;
+  --color-gray-900: #1C110A;
+
+  /* Slightly warm white for cards */
+  --color-white: #FFFCFA;
+
+  /* Primary: terracotta / cooking flame — replaces blue */
+  --color-blue-50:  #FEF3EE;
+  --color-blue-100: #FDDECB;
+  --color-blue-200: #FBB898;
+  --color-blue-300: #F79468;
+  --color-blue-400: #F07540;
+  --color-blue-500: #E8642A;   /* main accent */
+  --color-blue-600: #C4520F;
+  --color-blue-700: #9E420C;
+  --color-blue-800: #7A3309;
+  --color-blue-900: #562406;
+
+  /* Herb green for the wake-lock toggle */
+  --color-green-500: #5D9E58;
+  --color-green-400: #74B86E;
+
+  /* Error red — slightly warm */
+  --color-red-400: #E05A4A;
+  --color-red-500: #C44333;
+}
+
+/* ─── Class-based dark mode for Tailwind v4 ──────────────────────────── */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* ─── Base ───────────────────────────────────────────────────────────── */
 body {
   margin: 0;
   padding: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: #FDF7F2;
+}
+
+.dark body {
+  background-color: #1C110A;
 }
 
 #root {
   width: 100%;
   min-height: 100svh;
+  position: relative;
 }
 
-/* iOS safe area support */
+/* ─── Cooking background pattern ────────────────────────────────────── */
+#root::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url('/cooking-bg.svg');
+  background-repeat: repeat;
+  background-size: 220px 220px;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 1;
+}
+
+/* Slightly more visible in dark mode */
+.dark #root::before {
+  opacity: 1.4;
+  filter: brightness(1.6) saturate(0.8);
+}
+
+/* Ensure all content sits above the background */
+#root > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ─── iOS safe area ──────────────────────────────────────────────────── */
 .safe-bottom {
   padding-bottom: env(safe-area-inset-bottom);
 }

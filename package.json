@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "test": "vitest",
     "test:run": "vitest run",
-    "worker:dev": "wrangler dev worker/index.ts"
+    "worker:dev": "wrangler dev worker/index.ts --remote"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.100.1",

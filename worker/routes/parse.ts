@@ -45,7 +45,7 @@ ${body.text}`;
       'content-type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'claude-haiku-4-5-20251001',
+      model: 'claude-3-5-haiku-20241022',
       max_tokens: 4096,
       system: 'You are a recipe parser. Extract structured data from recipe text and return ONLY valid JSON — no markdown, no explanation.',
       messages: [{ role: 'user', content: prompt }],
@@ -53,22 +53,30 @@ ${body.text}`;
   });
 
   if (!response.ok) {
-    return c.json({ error: 'Parse service unavailable' }, 502);
+    const errText = await response.text().catch(() => '');
+    return c.json({ error: `Parse service unavailable (${response.status})`, detail: errText }, 502);
   }
 
   const data = await response.json() as { content: Array<{ text: string }> };
   const rawText = data.content?.[0]?.text ?? '';
 
+  // Strip markdown code fences the model sometimes adds despite instructions
+  const cleaned = rawText
+    .trim()
+    .replace(/^```(?:json)?\s*/i, '')
+    .replace(/\s*```$/, '')
+    .trim();
+
   let parsed: unknown;
   try {
-    parsed = JSON.parse(rawText);
+    parsed = JSON.parse(cleaned);
   } catch {
-    return c.json({ error: 'Failed to parse recipe structure' }, 422);
+    return c.json({ error: 'Failed to parse recipe structure', raw: cleaned.slice(0, 500) }, 422);
   }
 
   const result = parsed as { ingredients?: unknown[]; procedure?: unknown[] };
   if (!Array.isArray(result.ingredients) || !Array.isArray(result.procedure)) {
-    return c.json({ error: 'Invalid recipe structure returned' }, 422);
+    return c.json({ error: 'Invalid recipe structure returned', raw: cleaned.slice(0, 500) }, 422);
   }
 
   return c.json(result);

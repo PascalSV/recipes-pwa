@@ -30,10 +30,11 @@ describe('RecipeList', () => {
     expect(screen.getByText('Penne Arrabiata')).toBeInTheDocument();
   });
 
-  it('groups recipes by group name', () => {
+  it('groups recipes by group name with section headers', () => {
     renderList();
-    expect(screen.getByText('Pasta')).toBeInTheDocument();
-    expect(screen.getByText('Suppe')).toBeInTheDocument();
+    // Group names appear both as category chips and as section headers
+    expect(screen.getAllByText('Pasta').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('Suppe').length).toBeGreaterThanOrEqual(1);
   });
 
   it('filters by search query', () => {
@@ -44,11 +45,13 @@ describe('RecipeList', () => {
     expect(screen.queryByText('Spaghetti Carbonara')).not.toBeInTheDocument();
   });
 
-  it('hides empty groups after filtering', () => {
+  it('hides empty group section headers after filtering', () => {
     renderList();
     const input = screen.getByPlaceholderText('recipeList.searchPlaceholder');
     fireEvent.change(input, { target: { value: 'Tomaten' } });
-    expect(screen.queryByText('Pasta')).not.toBeInTheDocument();
+    // Section header h2 for Pasta should be gone (no Pasta recipes match)
+    const headings = screen.queryAllByRole('heading', { level: 2 });
+    expect(headings.every(h => h.textContent !== 'Pasta')).toBe(true);
   });
 
   it('shows no-results message when search has no matches', () => {

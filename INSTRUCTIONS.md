@@ -409,7 +409,7 @@ interface ParsedRecipe {
 wrangler secret put ANTHROPIC_API_KEY
 ```
 
-The Worker uses `@anthropic-ai/sdk` (or a direct `fetch` to `api.anthropic.com`). Recommended model: `claude-haiku-4-5-20251001` — fast and cheap for structured extraction tasks.
+The Worker uses `@anthropic-ai/sdk` (or a direct `fetch` to `api.anthropic.com`). Recommended model: `claude-3-5-haiku-20241022` — fast and cheap for structured extraction tasks.
 
 ### Update to `wrangler.toml`
 
@@ -940,7 +940,7 @@ wrangler secret put ANTHROPIC_API_KEY
 - **Language + theme persistence**: load from IndexedDB `prefs` in `App.tsx` before first render; show a neutral loading state until prefs resolve to avoid flicker
 - **Wake lock scope**: hold the lock in a top-level context (e.g. `App.tsx`) driven by `prefs.wakeLock`; do not create per-screen locks — the Settings toggle is the single source of truth
 - **Wake lock re-acquisition**: iOS releases the lock whenever the app is backgrounded; the `visibilitychange` handler in `useWakeLock` re-acquires it transparently on return without any user action
-- **Smart import model**: use `claude-haiku-4-5-20251001` for the parse endpoint — fast and cheap for structured JSON extraction; the full recipe text is small enough to fit in a single request
+- **Smart import model**: use `claude-3-5-haiku-20241022` for the parse endpoint — fast and cheap for structured JSON extraction; the full recipe text is small enough to fit in a single request
 - **Parse prompt output**: instruct Claude to return raw JSON only (no markdown fences); parse with `JSON.parse()` and validate the shape before returning to the client — return 422 if the response is not valid JSON or missing required fields
 - **Noise removal is client-side**: `preprocessRecipeText()` runs in the browser before the API call, reducing token usage; the Worker receives already-cleaned text
 - **Remark display**: render `remark` as a smaller, secondary-coloured line below the ingredient name in both `IngredientsList` and `IngredientEditor`; include it in shopping list export in parentheses

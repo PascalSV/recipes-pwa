@@ -2,126 +2,189 @@ import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import type { RecipeMeta } from '../types';
+import { getCategoryStyle, getCategoryColors } from '../lib/categoryColors';
 
 interface Props {
   recipes: RecipeMeta[];
   loading: boolean;
-  onLogout: () => void;
 }
 
-export function RecipeList({ recipes, loading, onLogout }: Props) {
+export function RecipeList({ recipes, loading }: Props) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [search, setSearch] = useState('');
+  const [selectedGroup, setSelectedGroup] = useState<string | null>(null);
 
-  const grouped = useMemo(() => {
-    const filtered = recipes.filter(r =>
+  const allGroups = useMemo(
+    () => Array.from(new Set(recipes.map(r => r.group))).sort(),
+    [recipes]
+  );
+
+  const filtered = useMemo(() => {
+    let list = recipes;
+    if (search) list = list.filter(r =>
       r.name.toLowerCase().includes(search.toLowerCase())
     );
+    if (selectedGroup) list = list.filter(r => r.group === selectedGroup);
+    return list.sort((a, b) => a.name.localeCompare(b.name));
+  }, [recipes, search, selectedGroup]);
+
+  // Group for display (only when showing all)
+  const grouped = useMemo(() => {
+    if (selectedGroup) return null;
     const map = new Map<string, RecipeMeta[]>();
     for (const r of filtered) {
-      const list = map.get(r.group) ?? [];
-      list.push(r);
-      map.set(r.group, list);
+      const g = map.get(r.group) ?? [];
+      g.push(r);
+      map.set(r.group, g);
     }
-    // Sort groups and recipes within each group
-    return Array.from(map.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([group, items]) => ({
-        group,
-        items: items.sort((a, b) => a.name.localeCompare(b.name)),
-      }));
-  }, [recipes, search]);
+    return Array.from(map.entries()).sort(([a], [b]) => a.localeCompare(b));
+  }, [filtered, selectedGroup]);
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Nav bar */}
-      <div className="sticky top-0 z-10 bg-white/80 dark:bg-gray-900/80 backdrop-blur border-b border-gray-200 dark:border-gray-800 safe-top">
-        <div className="flex items-center justify-between px-4 h-12">
-          <h1 className="text-lg font-semibold text-gray-900 dark:text-white">
+      {/* Header */}
+      <div className="sticky top-0 z-10 bg-gray-50/90 dark:bg-gray-900/90 backdrop-blur">
+        <div className="safe-top" />
+        <div className="px-4 pt-4 pb-2">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
             {t('nav.recipes')}
           </h1>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate('/new')}
-              aria-label={t('nav.newRecipe')}
-              className="text-blue-500 text-2xl leading-none"
-            >
-              +
-            </button>
-            <button
-              onClick={() => navigate('/settings')}
-              aria-label={t('nav.settings')}
-              className="text-blue-500"
-            >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="3" />
-                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
-              </svg>
-            </button>
-            <button
-              onClick={onLogout}
-              aria-label="Abmelden"
-              className="text-blue-500"
-            >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                <polyline points="16 17 21 12 16 7" />
-                <line x1="21" y1="12" x2="9" y2="12" />
-              </svg>
-            </button>
+        </div>
+
+        {/* Search bar */}
+        <div className="px-4 pb-2">
+          <div className="flex items-center gap-2 bg-white dark:bg-gray-800 rounded-2xl px-4 py-2.5 shadow-sm border border-gray-100 dark:border-gray-700">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" strokeWidth="2" className="text-gray-400 flex-shrink-0">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+            <input
+              type="search"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder={t('recipeList.searchPlaceholder')}
+              className="flex-1 bg-transparent text-gray-900 dark:text-white text-sm outline-none placeholder:text-gray-400"
+            />
+            {search && (
+              <button onClick={() => setSearch('')} className="text-gray-400">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M18 6 6 18M6 6l12 12"/>
+                </svg>
+              </button>
+            )}
           </div>
         </div>
-        {/* Search bar */}
-        <div className="px-4 pb-3">
-          <input
-            type="search"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder={t('recipeList.searchPlaceholder')}
-            className="w-full px-4 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-white text-sm outline-none"
-          />
-        </div>
+
+        {/* Category chips */}
+        {allGroups.length > 0 && (
+          <div className="flex gap-2 px-4 pb-3 overflow-x-auto scrollbar-none">
+            <CategoryChip
+              label="Alle"
+              active={selectedGroup === null}
+              onClick={() => setSelectedGroup(null)}
+              color={null}
+            />
+            {allGroups.map(g => (
+              <CategoryChip
+                key={g}
+                label={g}
+                active={selectedGroup === g}
+                onClick={() => setSelectedGroup(g === selectedGroup ? null : g)}
+                color={getCategoryColors(g)[0]}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Content */}
-      <div className="pb-8">
+      <div className="pb-28">
         {loading && recipes.length === 0 && (
           <div className="flex justify-center pt-20">
             <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
           </div>
         )}
-        {!loading && grouped.length === 0 && (
-          <p className="text-center text-gray-500 dark:text-gray-400 mt-20">
+
+        {!loading && filtered.length === 0 && (
+          <p className="text-center text-gray-400 mt-20">
             {t('recipeList.noResults')}
           </p>
         )}
-        {grouped.map(({ group, items }) => (
-          <div key={group}>
-            <div className="sticky top-[96px] z-[5] px-4 py-1 bg-gray-50/90 dark:bg-gray-900/90 backdrop-blur">
-              <span className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
-                {group}
-              </span>
-            </div>
-            <div className="bg-white dark:bg-gray-800 border-t border-b border-gray-200 dark:border-gray-700">
-              {items.map((recipe, i) => (
-                <button
-                  key={recipe.id}
-                  onClick={() => navigate(`/recipe/${recipe.id}`)}
-                  className={`w-full flex items-center justify-between px-4 py-3 text-left ${
-                    i < items.length - 1 ? 'border-b border-gray-100 dark:border-gray-700' : ''
-                  }`}
-                >
-                  <span className="text-gray-900 dark:text-white text-base">{recipe.name}</span>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-gray-300 dark:text-gray-600 flex-shrink-0">
-                    <polyline points="9 18 15 12 9 6" />
-                  </svg>
-                </button>
-              ))}
-            </div>
+
+        {/* Grouped grid (All view) */}
+        {grouped && grouped.map(([group, items]) => (
+          <div key={group} className="mb-2">
+            <h2 className="px-4 pt-4 pb-2 text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-widest">
+              {group}
+            </h2>
+            <RecipeGrid recipes={items} onSelect={id => navigate(`/recipe/${id}`)} />
           </div>
         ))}
+
+        {/* Flat grid (filtered view) */}
+        {!grouped && filtered.length > 0 && (
+          <div className="mt-2">
+            <RecipeGrid recipes={filtered} onSelect={id => navigate(`/recipe/${id}`)} />
+          </div>
+        )}
       </div>
     </div>
+  );
+}
+
+function RecipeGrid({ recipes, onSelect }: { recipes: RecipeMeta[]; onSelect: (id: string) => void }) {
+  return (
+    <div className="grid grid-cols-2 gap-3 px-4">
+      {recipes.map(recipe => (
+        <RecipeCard key={recipe.id} recipe={recipe} onSelect={onSelect} />
+      ))}
+    </div>
+  );
+}
+
+function RecipeCard({ recipe, onSelect }: { recipe: RecipeMeta; onSelect: (id: string) => void }) {
+  const style = getCategoryStyle(recipe.group);
+  return (
+    <button
+      onClick={() => onSelect(recipe.id)}
+      className="relative h-36 rounded-2xl overflow-hidden shadow-md active:scale-95 transition-transform text-left"
+      style={style}
+    >
+      {/* Decorative circles */}
+      <div className="absolute -right-5 -top-5 w-24 h-24 rounded-full bg-white/10" />
+      <div className="absolute -right-3 bottom-4 w-16 h-16 rounded-full bg-white/10" />
+      <div className="absolute left-3 -bottom-6 w-20 h-20 rounded-full bg-black/10" />
+
+      {/* Content */}
+      <div className="absolute inset-0 p-3 flex flex-col justify-end">
+        <span className="text-white font-semibold text-sm leading-snug line-clamp-3" style={{ textShadow: '0 1px 3px rgba(0,0,0,0.3)' }}>
+          {recipe.name}
+        </span>
+      </div>
+    </button>
+  );
+}
+
+function CategoryChip({
+  label, active, onClick, color,
+}: {
+  label: string;
+  active: boolean;
+  onClick: () => void;
+  color: string | null;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`flex-shrink-0 px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+        active
+          ? 'text-white shadow-sm'
+          : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700'
+      }`}
+      style={active ? { backgroundColor: color ?? '#E8642A' } : undefined}
+    >
+      {label}
+    </button>
   );
 }

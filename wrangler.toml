@@ -4,13 +4,13 @@ compatibility_date = "2024-09-23"
 workers_dev = true
 
 routes = [
-  { pattern = "recipes-pwa.everyday-apps.org/*", custom_domain = true }
+  { pattern = "recipes-pwa.everyday-apps.org", custom_domain = true }
 ]
 
 [[r2_buckets]]
 binding = "RECIPES_BUCKET"
 bucket_name = "pascals-recipes"
-preview_bucket_name = "pascals-recipes-preview"
+preview_bucket_name = "pascals-recipes"
 
 [vars]
 ALLOWED_USERS = "Claudia,Pascal"

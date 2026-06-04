@@ -12,7 +12,11 @@ async function apiFetch<T>(path: string, token: string, options?: RequestInit): 
     },
   });
   if (res.status === 401) throw new Error('UNAUTHORIZED');
-  if (!res.ok) throw new Error(`HTTP_${res.status}`);
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    console.error(`API ${path} → ${res.status}`, body);
+    throw new Error(`HTTP_${res.status}`);
+  }
   return res.json() as Promise<T>;
 }
 

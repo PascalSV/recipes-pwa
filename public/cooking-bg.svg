@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220">
+  <g fill="none" stroke="#C4520F" stroke-linecap="round" stroke-linejoin="round">
+
+    <!-- Wooden spoon — top left -->
+    <g stroke-width="2.2" stroke-opacity="0.18">
+      <!-- Bowl -->
+      <path d="M32,12 C20,12 17,22 22,30 C25,35 30,37 36,35 C42,33 46,26 43,18 C40,12 38,10 32,12 Z"/>
+      <!-- Handle -->
+      <path d="M31,35 C31,48 31,58 32,72"/>
+    </g>
+
+    <!-- Whisk — right side -->
+    <g stroke-width="2" stroke-opacity="0.15">
+      <!-- Handle -->
+      <line x1="168" y1="110" x2="168" y2="148"/>
+      <!-- Balloon wires -->
+      <path d="M154,110 Q148,90 168,84 Q188,90 182,110"/>
+      <path d="M157,108 Q152,91 168,86 Q184,91 179,108"/>
+      <path d="M160,106 Q156,92 168,88 Q180,92 176,106"/>
+      <!-- Bottom tie -->
+      <ellipse cx="168" cy="110" rx="14" ry="3"/>
+    </g>
+
+    <!-- Pan / skillet — bottom center -->
+    <g stroke-width="2.2" stroke-opacity="0.16">
+      <!-- Pan body -->
+      <path d="M68,172 Q68,192 100,192 Q132,192 132,172 Z"/>
+      <line x1="68" y1="172" x2="132" y2="172"/>
+      <!-- Handle -->
+      <path d="M132,178 Q145,178 152,172 Q156,168 155,164"/>
+      <!-- Rim highlight -->
+      <path d="M70,172 Q100,168 130,172"/>
+    </g>
+
+    <!-- Small herb leaf — top right -->
+    <g stroke-width="1.8" stroke-opacity="0.14">
+      <path d="M155,18 Q170,8 178,22 Q170,28 155,18 Z"/>
+      <path d="M162,24 Q178,16 183,32 Q174,36 162,24 Z"/>
+      <line x1="155" y1="18" x2="162" y2="38"/>
+    </g>
+
+    <!-- Spice dots — scattered -->
+    <g fill="#C4520F" stroke="none">
+      <circle cx="112" cy="24" r="3" fill-opacity="0.2"/>
+      <circle cx="122" cy="34" r="2" fill-opacity="0.17"/>
+      <circle cx="108" cy="38" r="2.5" fill-opacity="0.15"/>
+      <circle cx="44" cy="108" r="2.5" fill-opacity="0.18"/>
+      <circle cx="54" cy="118" r="1.8" fill-opacity="0.14"/>
+      <circle cx="42" cy="122" r="1.5" fill-opacity="0.14"/>
+      <circle cx="185" cy="158" r="2.5" fill-opacity="0.18"/>
+      <circle cx="195" cy="150" r="1.8" fill-opacity="0.14"/>
+    </g>
+
+  </g>
+</svg>
