@@ -1,0 +1,20 @@
+name = "recipes-pwa-api"
+main = "worker/index.ts"
+compatibility_date = "2024-09-23"
+workers_dev = true
+
+routes = [
+  { pattern = "recipes-pwa.everyday-apps.org/*", custom_domain = true }
+]
+
+[[r2_buckets]]
+binding = "RECIPES_BUCKET"
+bucket_name = "pascals-recipes"
+preview_bucket_name = "pascals-recipes-preview"
+
+[vars]
+ALLOWED_USERS = "Claudia,Pascal"
+
+[observability.logs]
+enabled = true
+invocation_logs = true

@@ -1,0 +1,68 @@
+{
+  "nav": {
+    "recipes": "Rezepte",
+    "back": "Zurück",
+    "settings": "Einstellungen",
+    "newRecipe": "Neues Rezept"
+  },
+  "login": {
+    "title": "Anmelden",
+    "selectUser": "Benutzer wählen",
+    "tokenLabel": "Token",
+    "signIn": "Anmelden",
+    "error": "Ungültiger Token. Bitte erneut versuchen."
+  },
+  "recipeList": {
+    "searchPlaceholder": "Rezepte suchen…",
+    "noResults": "Keine Rezepte gefunden"
+  },
+  "recipeDetail": {
+    "ingredients": "Zutaten",
+    "procedure": "Zubereitung",
+    "portions": "Portionen",
+    "share": "Einkaufsliste teilen",
+    "shareCopied": "In Zwischenablage kopiert"
+  },
+  "newRecipe": {
+    "title": "Neues Rezept",
+    "pasteLabel": "Rezepttext einfügen",
+    "pastePlaceholder": "Rezepttext hier einfügen – Zutaten und Zubereitung werden automatisch erkannt…",
+    "parseButton": "Rezept erkennen",
+    "parsing": "Wird erkannt…",
+    "parseError": "Aus diesem Text konnte kein Rezept erkannt werden. Bitte Eingabe prüfen.",
+    "name": "Rezeptname",
+    "group": "Kategorie",
+    "portions": "Standardportionen",
+    "ingredients": "Zutaten",
+    "procedure": "Zubereitung",
+    "addIngredient": "Zutat hinzufügen",
+    "addStep": "Schritt hinzufügen",
+    "save": "Rezept speichern",
+    "remarkPlaceholder": "z. B. abgetropft und abgespült"
+  },
+  "settings": {
+    "title": "Einstellungen",
+    "appearance": "Darstellung",
+    "theme": "Design",
+    "themeSystem": "System",
+    "themeLight": "Hell",
+    "themeDark": "Dunkel",
+    "language": "Sprache",
+    "display": "Anzeige",
+    "keepScreenOn": "Bildschirm aktiv lassen",
+    "keepScreenOnUnsupported": "Auf diesem Gerät nicht unterstützt",
+    "account": "Konto",
+    "loggedInAs": "Angemeldet als",
+    "signOut": "Abmelden"
+  },
+  "units": {
+    "g": "g",
+    "kg": "kg",
+    "ml": "ml",
+    "l": "l",
+    "tbsp": "EL",
+    "tsp": "TL",
+    "cup": "Tasse",
+    "piece": "Stk"
+  }
+}
