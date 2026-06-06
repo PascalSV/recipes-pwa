@@ -62,15 +62,15 @@ ${MANIFEST_LINK}
 ${THEME_SCRIPT}
 </head>
 <body data-page="${esc(opts.page)}" data-lang="${opts.lang}"${opts.bodyAttrs ? ' ' + opts.bodyAttrs : ''}>
-<nav class="nav">
-  <div style="display:flex;align-items:center;min-width:44px">${opts.navLeft ?? ''}</div>
-  <span class="nav-title">${esc(opts.title)}</span>
-  <div style="display:flex;align-items:center;justify-content:flex-end;min-width:44px">${opts.navRight ?? ''}</div>
-</nav>
-<div class="page">
+<header class="header-row">
+  <div class="nav-left">${opts.navLeft ?? ''}</div>
+  <h1 class="nav-title">${esc(opts.title)}</h1>
+  <div class="nav-right">${opts.navRight ?? ''}</div>
+</header>
+<div class="content-row">
 ${opts.content}
 </div>
-<script src="/app.js"><\/script>
+<script src="/app.js"></script>
 </body>
 </html>`;
 }

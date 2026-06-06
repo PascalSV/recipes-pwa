@@ -159,4 +159,19 @@ test.describe('Recipe Import', () => {
       ).toBeVisible({ timeout: 5000 });
     }
   });
+
+  // e2e/recipe-import.spec.ts
+  test('Cancel delete ingredient', async ({ page }) => {
+    await page.goto('/edit-recipe');
+    
+    // Add ingredient
+    await page.click('#add-ingredient');
+    
+    // Delete ingredient
+    await page.click('.del-btn');
+    await page.click('button:has-text("Cancel")'); // Cancel dialog
+    
+    // Verify item remains
+    await expect(page.locator('.ing-editor-row')).toBeVisible();
+  });
 });
