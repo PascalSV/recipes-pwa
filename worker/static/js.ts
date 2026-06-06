@@ -389,7 +389,7 @@ function createIngRow(ing) {
 }
 
 function splitNameRemark(raw) {
-  var m = raw.match(/^(.*?)\s*\(([^)]+)\)\s*$/);
+  var m = raw.match(/^(.*?)\\s*\\(([^)]+)\\)\\s*$/);
   if (!m) return { name: raw.trim(), remark: '' };
   return { name: m[1].trim(), remark: m[2].trim() };
 }

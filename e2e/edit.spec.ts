@@ -56,9 +56,10 @@ test.describe('Edit Recipe', () => {
   test('edit form shows ingredient names correctly', async ({ page }) => {
     await page.goto(`/recipe/${recipeId}/edit`);
     await expect(page.locator('.ing-editor-row')).toHaveCount(3, { timeout: 8000 });
-    const names = await page.locator('.ing-editor-row .ing-name').allTextContents();
-    // Names include remark in parens if present
-    expect(names.map(n => n.trim())).toEqual(['Rindfleisch', 'Zwiebeln', 'Paprikapulver']);
+    const names = await page.locator('.ing-editor-row .ing-name').evaluateAll(
+      (els: HTMLInputElement[]) => els.map(el => el.value)
+    );
+    expect(names).toEqual(['Rindfleisch', 'Zwiebeln', 'Paprikapulver']);
   });
 
   test('edit form populates all procedure steps', async ({ page }) => {

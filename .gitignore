@@ -13,3 +13,9 @@ dist/
 # Playwright
 playwright-report/
 test-results/
+
+# TODOs
+TODOS.md
+
+# opencode
+.opencode/
