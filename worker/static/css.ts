@@ -153,7 +153,7 @@ a.list-item:active{background:var(--bg-sel)}
 .form-section{padding:20px 16px 0}
 .form-card{background:var(--bg-card);border-radius:var(--radius);box-shadow:var(--shadow-s);overflow:hidden}
 .form-card-padded{padding:16px}
-.ing-editor-row{display:grid;grid-template-columns:70px 80px 1fr 36px;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border-2)}
+.ing-editor-row{display:grid;grid-template-columns:70px 60px 1fr 36px;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border-2)}
 .ing-editor-row:last-child{border-bottom:none}
 .ing-editor-row .input,.ing-editor-row .select{padding:9px 10px;font-size:15px}
 .ing-editor-row .select{padding-right:28px}
