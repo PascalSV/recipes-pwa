@@ -112,6 +112,11 @@ function initList() {
 
 // ---- Detail ----
 function initDetail() {
+  // Keep the screen on while the user is following a recipe
+  acquireWakeLock();
+  // Release when navigating away (pagehide is more reliable than beforeunload on mobile)
+  window.addEventListener('pagehide', releaseWakeLock);
+
   const body = document.body;
   let portions = parseInt(body.dataset.portions || '4', 10);
   const defPortions = parseInt(body.dataset.defaultPortions || '4', 10);
@@ -441,21 +446,33 @@ function initSettings() {
 
 // ---- Wake Lock ----
 var wakeLock = null;
+
 async function acquireWakeLock() {
   if (!('wakeLock' in navigator) || wakeLock) return;
   try {
     wakeLock = await navigator.wakeLock.request('screen');
     wakeLock.addEventListener('release', function () { wakeLock = null; });
-  } catch (_) {}
+  } catch (_) {
+    // Device refused (low battery, power-saving mode, etc.) — silently ignore
+  }
 }
+
 async function releaseWakeLock() {
   if (!wakeLock) return;
   await wakeLock.release().catch(function(){});
   wakeLock = null;
 }
+
+// Re-acquire after OS forces a release (e.g. screen turned off, tab switched).
+// Covers: detail page always keeps screen on; global toggle respects user preference.
 document.addEventListener('visibilitychange', function () {
-  if (document.visibilityState === 'visible' && localStorage.getItem('wakeLock') === 'true') acquireWakeLock();
+  if (document.visibilityState !== 'visible') return;
+  var onDetail = document.body.dataset.page === 'detail';
+  var globallyEnabled = localStorage.getItem('wakeLock') === 'true';
+  if (onDetail || globallyEnabled) acquireWakeLock();
 });
+
+// On app start: activate if user had it enabled globally
 if (localStorage.getItem('wakeLock') === 'true') acquireWakeLock();
 
 // ---- Login ----
