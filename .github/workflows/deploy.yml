@@ -46,7 +46,7 @@ jobs:
       - run: npm run build
         env:
           VITE_API_BASE: ""
-      - run: npx wrangler pages deploy dist --project-name recipes-pwa --commit-dirty=true
+      - run: npx wrangler pages deploy dist --project-name recipes-pwa-frontend --commit-dirty=true
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
