@@ -38,8 +38,8 @@ img,svg{display:block}
 }
 
 /* ── Nav ── */
-.nav{position:sticky;top:0;z-index:100;background:var(--bg-card);color:var(--text);height:calc(var(--nav-h) + var(--safe-t));padding-top:var(--safe-t);display:flex;align-items:center;padding-inline:4px;border-bottom:1px solid var(--border-2)}
-.nav-title{flex:1;font-size:17px;font-weight:600;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-inline:8px;color:var(--text)}
+.nav{position:sticky;top:0;z-index:100;background:var(--bg);color:var(--text);height:calc(var(--nav-h) + var(--safe-t));padding-top:var(--safe-t);display:flex;align-items:center;padding-inline:4px;border-bottom:1px solid var(--border-2)}
+.nav-title{flex:1;font-size:17px;font-weight:600;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-inline:8px;color:var(--green)}
 .nav-btn{display:flex;align-items:center;justify-content:center;min-width:44px;height:44px;background:transparent;border:none;color:var(--green);border-radius:var(--radius-xs);flex-shrink:0;transition:background .15s;font-size:14px;font-weight:500;gap:4px;padding-inline:10px;white-space:nowrap;text-decoration:none}
 .nav-btn svg{width:22px;height:22px;flex-shrink:0}
 .nav-btn:active{background:var(--green-3)}
