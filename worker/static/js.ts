@@ -94,15 +94,67 @@ if (page === 'login')    initLogin();
 
 // ---- List ----
 function initList() {
-  const search = document.getElementById('search');
+  var CHEVRON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>';
+  var EMPTY_TEXT = _lang === 'en' ? 'No recipes yet.' : 'Noch keine Rezepte vorhanden.';
+
+  async function refreshList() {
+    var res = await api('/api/recipes');
+    if (!res || !res.ok) return;
+    var index = await res.json();
+    var recipes = index.recipes || [];
+
+    var pageEl = document.querySelector('.page');
+    if (!pageEl) return;
+
+    Array.from(pageEl.querySelectorAll('[data-group], .empty')).forEach(function (el) { el.remove(); });
+
+    if (recipes.length === 0) {
+      var empty = document.createElement('div');
+      empty.className = 'empty';
+      empty.innerHTML = '<p>' + EMPTY_TEXT + '</p>';
+      pageEl.appendChild(empty);
+      return;
+    }
+
+    var grouped = {};
+    recipes.forEach(function (r) {
+      var g = r.group || 'Sonstiges';
+      if (!grouped[g]) grouped[g] = [];
+      grouped[g].push(r);
+    });
+    Object.keys(grouped).sort(function (a, b) { return a.localeCompare(b, 'de'); })
+      .forEach(function (group) {
+        var items = grouped[group].slice().sort(function (a, b) { return a.name.localeCompare(b.name, 'de'); });
+        var div = document.createElement('div');
+        div.dataset.group = group;
+        div.innerHTML =
+          '<div class="group-title">' + esc(group) + '</div>' +
+          '<div class="recipe-list">' +
+          items.map(function (r) {
+            return '<a href="/recipe/' + esc(r.id) + '" class="list-item" data-recipe-name="' + esc(r.name) + '">' +
+              '<span class="list-item-text">' + esc(r.name) + '</span>' +
+              '<span class="list-chevron">' + CHEVRON_SVG + '</span>' +
+              '</a>';
+          }).join('') +
+          '</div>';
+        pageEl.appendChild(div);
+      });
+  }
+
+  refreshList();
+  window.addEventListener('pageshow', function (e) {
+    if (e.persisted) refreshList();
+  });
+
+  var search = document.getElementById('search');
   if (!search) return;
   search.addEventListener('input', function () {
-    const q = this.value.toLowerCase().trim();
+    var q = this.value.toLowerCase().trim();
     document.querySelectorAll('[data-recipe-name]').forEach(function (item) {
       item.style.display = !q || item.dataset.recipeName.toLowerCase().includes(q) ? '' : 'none';
     });
     document.querySelectorAll('[data-group]').forEach(function (group) {
-      const any = Array.from(group.querySelectorAll('[data-recipe-name]')).some(function(i) {
+      var any = Array.from(group.querySelectorAll('[data-recipe-name]')).some(function (i) {
         return i.style.display !== 'none';
       });
       group.style.display = any ? '' : 'none';
