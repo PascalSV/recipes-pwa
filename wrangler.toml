@@ -1,10 +1,10 @@
-name = "recipes-pwa"
+name = "recipes-pwa-api"
 main = "worker/index.ts"
 compatibility_date = "2024-09-23"
 workers_dev = true
 
 routes = [
-  { pattern = "recipes-pwa.everyday-apps.org/api/*", zone_name = "everyday-apps.org" }
+  { pattern = "recipes-pwa.everyday-apps.org", custom_domain = true }
 ]
 
 [[r2_buckets]]
