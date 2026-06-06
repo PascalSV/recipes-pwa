@@ -1,0 +1,119 @@
+import { pageLayout, esc } from './layout.ts';
+import { t, type Lang } from '../lib/i18n.ts';
+import type { Recipe } from '../types.ts';
+
+const BACK = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`;
+
+const GROUPS = [
+  'Fleisch', 'Fisch', 'Pasta', 'Suppe', 'Salat',
+  'Vorspeise', 'Dessert', 'Backen', 'Sonstiges',
+];
+
+export function newRecipePage(lang: Lang): string {
+  return recipePage({ lang });
+}
+
+export function editRecipePage(recipe: Recipe, lang: Lang): string {
+  return recipePage({ lang, recipe });
+}
+
+function recipePage({ lang, recipe }: { lang: Lang; recipe?: Recipe }): string {
+  const isEdit = !!recipe;
+  const title = isEdit ? t('edit.title', lang) : t('new.title', lang);
+  const page  = isEdit ? 'edit' : 'new';
+
+  const navLeft   = `<a href="${isEdit ? `/recipe/${esc(recipe!.id)}` : '/'}" class="nav-btn">${BACK} ${t('back', lang)}</a>`;
+  const groupOptions = GROUPS.map(g =>
+    `<option value="${esc(g)}"${isEdit && recipe!.group === g ? ' selected' : ''}>${esc(g)}</option>`
+  ).join('');
+
+  // Embed existing recipe JSON for fast pre-fill (fallback: initEdit also fetches via API)
+  const recipeScript = isEdit
+    ? `<script>try{window.__recipe__=${JSON.stringify(recipe).replace(/<\//g, '<\\/')};}catch(e){}<\/script>`
+    : '';
+
+  const content = `
+    ${recipeScript}
+
+    <!-- Phase 1: paste area (new only) -->
+    <div id="paste-phase"${isEdit ? ' class="hidden"' : ''}>
+      <div class="form-section">
+        <div class="field">
+          <label class="field-label" for="paste-input">${t('new.paste_label', lang)}</label>
+          <textarea id="paste-input" class="textarea" rows="10"
+            placeholder="${esc(t('new.paste_ph', lang))}"
+            style="min-height:180px"></textarea>
+        </div>
+        <div id="parse-error" class="alert alert-error hidden" style="margin-top:12px">
+          ${t('new.parse_error', lang)}
+        </div>
+        <button id="parse-btn" type="button" class="btn btn-primary btn-block mt-16"
+          disabled onclick="handleParse()">
+          ${t('new.extract', lang)}
+        </button>
+      </div>
+    </div>
+
+    <!-- Phase 2: editable form -->
+    <div id="form-phase"${isEdit ? '' : ' class="hidden"'}>
+      <div class="form-section">
+        <div class="field">
+          <label class="field-label" for="recipe-name">${t('new.name', lang)}</label>
+          <input id="recipe-name" type="text" class="input" placeholder="${esc(t('new.name', lang))}"${isEdit ? ` value="${esc(recipe!.name)}"` : ''}>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+          <div class="field">
+            <label class="field-label" for="recipe-group">${t('new.category', lang)}</label>
+            <select id="recipe-group" class="select">${groupOptions}</select>
+          </div>
+          <div class="field">
+            <label class="field-label" for="recipe-portions">${t('new.portions', lang)}</label>
+            <input id="recipe-portions" type="number" class="input" value="${isEdit ? recipe!.defaultPortions : 4}" min="1" max="20">
+          </div>
+          <div class="field">
+            <label class="field-label" for="recipe-time">${t('new.time', lang)}</label>
+            <input id="recipe-time" type="number" class="input" placeholder="–" min="1" max="1440"${isEdit && recipe!.cookingTime ? ` value="${recipe!.cookingTime}"` : ''}>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="field-label" style="padding-bottom:8px">${t('new.ingredients', lang)}</div>
+        <div class="form-card">
+          <div class="form-card-padded">
+            <div id="ing-list"></div>
+            <button type="button" class="btn btn-secondary btn-block btn-sm mt-8" onclick="addIngredient()">
+              ${t('new.add_ingredient', lang)}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <div class="field-label" style="padding-bottom:8px">${t('new.preparation', lang)}</div>
+        <div class="form-card">
+          <div class="form-card-padded">
+            <div id="steps-list"></div>
+            <button type="button" class="btn btn-secondary btn-block btn-sm mt-8" onclick="addStep()">
+              ${t('new.add_step', lang)}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="form-section" style="padding-bottom:40px">
+        <button id="save-btn" type="button" class="btn btn-primary btn-block mt-16" onclick="handleSave()">
+          ${t('new.save', lang)}
+        </button>
+      </div>
+    </div>
+  `;
+
+  return pageLayout({
+    title, page, lang, navLeft, content,
+    bodyAttrs: isEdit ? `data-recipe-id="${esc(recipe!.id)}"` : undefined,
+  });
+}
