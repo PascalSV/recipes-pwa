@@ -64,7 +64,7 @@ function recipePage({ lang, recipe }: { lang: Lang; recipe?: Recipe }): string {
       </div>
 
       <div class="form-section">
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+        <div style="display:grid;grid-template-columns:1fr;gap:12px;@media (min-width: 640px) { grid-template-columns: 1fr 1fr 1fr; }">
           <div class="field">
             <label class="field-label" for="recipe-group">${t('new.category', lang)}</label>
             <select id="recipe-group" class="select">${groupOptions}</select>

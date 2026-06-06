@@ -1,0 +1,7 @@
+- in edit mode, a delete button is missing - pressing delete should bring up a dialog asking for confirmation
+- in edit mode, a cancel button is missing - pressing cancel should bring up a dialog asking for confirmation
+- The buttons in the header should remain in the upper row, the title of the app and the recipe should move into a row below
+- The recipe view has a share button but I would prefer if this would create a PDF file of the recipe
+- The row hat contains the number of portions and the time for the dish is a solid block which is old-school. Please remove the solid background and introduce some slim, nice lookig seperators
+- Always remember that this app is running on a mobile device, an iPhone, so adapt font sizes, buttons sizes etc accordingly
+- The list of recipes is not updated when the main view is displayed. Thats bad, especially when recipes have been deleted
