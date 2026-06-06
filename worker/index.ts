@@ -7,6 +7,13 @@ import { authRoutes } from './routes/auth.ts';
 import { recipeRoutes } from './routes/recipes.ts';
 import { parseRoutes } from './routes/parse.ts';
 import { CSS } from './static/css.ts';
+import {
+  FONT_D_DIN,
+  FONT_D_DIN_BOLD,
+  FONT_D_DIN_ITALIC,
+  FONT_D_DINCONDENSED,
+  FONT_D_DINCONDENSED_BOLD,
+} from './static/fontdata.ts';
 import { JS } from './static/js.ts';
 import { SW } from './static/sw.ts';
 import { loginPage } from './views/login.ts';
@@ -27,6 +34,18 @@ function lang(c: { req: { header: (k: string) => string | undefined } }): Lang {
 app.get('/styles.css', (c) =>
   c.text(CSS, 200, { 'Content-Type': 'text/css;charset=UTF-8', 'Cache-Control': 'public,max-age=86400' })
 );
+
+const FONT_CACHE = 'public,max-age=31536000,immutable';
+function serveFont(b64: string): Response {
+  const bytes = Uint8Array.from(atob(b64), ch => ch.charCodeAt(0));
+  return new Response(bytes, { headers: { 'Content-Type': 'font/otf', 'Cache-Control': FONT_CACHE } });
+}
+
+app.get('/fonts/D-DIN.otf',              () => serveFont(FONT_D_DIN));
+app.get('/fonts/D-DIN-Bold.otf',         () => serveFont(FONT_D_DIN_BOLD));
+app.get('/fonts/D-DIN-Italic.otf',       () => serveFont(FONT_D_DIN_ITALIC));
+app.get('/fonts/D-DINCondensed.otf',     () => serveFont(FONT_D_DINCONDENSED));
+app.get('/fonts/D-DINCondensed-Bold.otf',() => serveFont(FONT_D_DINCONDENSED_BOLD));
 
 app.get('/app.js', (c) =>
   c.text(JS, 200, { 'Content-Type': 'application/javascript;charset=UTF-8', 'Cache-Control': 'public,max-age=86400' })

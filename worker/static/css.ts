@@ -1,7 +1,13 @@
 export const CSS = `
+@font-face{font-family:'D-DIN';font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/D-DIN.otf') format('opentype')}
+@font-face{font-family:'D-DIN';font-style:italic;font-weight:400;font-display:swap;src:url('/fonts/D-DIN-Italic.otf') format('opentype')}
+@font-face{font-family:'D-DIN';font-style:normal;font-weight:700;font-display:swap;src:url('/fonts/D-DIN-Bold.otf') format('opentype')}
+@font-face{font-family:'D-DIN Condensed';font-style:normal;font-weight:400;font-display:swap;src:url('/fonts/D-DINCondensed.otf') format('opentype')}
+@font-face{font-family:'D-DIN Condensed';font-style:normal;font-weight:700;font-display:swap;src:url('/fonts/D-DINCondensed-Bold.otf') format('opentype')}
+
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100dvh;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
+body{font-family:'D-DIN',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100dvh;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
 a{color:inherit;text-decoration:none}
 button{cursor:pointer;font:inherit;-webkit-tap-highlight-color:transparent}
 input,textarea,select{font:inherit}
