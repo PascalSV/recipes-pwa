@@ -1,16 +1,8 @@
 import { Hono } from 'hono';
-import type { Env } from '../index';
+import type { Env } from '../types.ts';
+import { resolveUserToken, resolveToken, sessionCookie } from '../lib/auth.ts';
 
 export const authRoutes = new Hono<{ Bindings: Env }>();
-
-function timingSafeEqual(a: string, b: string): boolean {
-  if (a.length !== b.length) return false;
-  let result = 0;
-  for (let i = 0; i < a.length; i++) {
-    result |= a.charCodeAt(i) ^ b.charCodeAt(i);
-  }
-  return result === 0;
-}
 
 authRoutes.post('/login', async (c) => {
   const body = await c.req.json<{ user?: string; token?: string }>();
@@ -20,15 +12,36 @@ authRoutes.post('/login', async (c) => {
     return c.json({ error: 'Missing user or token' }, 400);
   }
 
-  const validUsers = (c.env.ALLOWED_USERS ?? 'Claudia,Pascal').split(',');
-  if (!validUsers.includes(user)) {
-    return c.json({ error: 'Unknown user' }, 401);
+  // Find the canonical username (case-insensitive match against ALLOWED_USERS)
+  const canonicalUser = c.env.ALLOWED_USERS
+    .split(',')
+    .map(u => u.trim())
+    .find(u => u.toLowerCase() === user.toLowerCase());
+
+  if (!canonicalUser) {
+    return c.json({ error: 'Invalid credentials' }, 401);
   }
 
-  const expectedToken = user === 'Claudia' ? c.env.TOKEN_CLAUDIA : c.env.TOKEN_PASCAL;
-  if (!expectedToken || !timingSafeEqual(token, expectedToken)) {
-    return c.json({ error: 'Invalid token' }, 401);
+  // Validate token against this specific user (not a full scan)
+  const session = resolveUserToken(c.env, canonicalUser, token);
+  if (!session) {
+    return c.json({ error: 'Invalid credentials' }, 401);
   }
 
-  return c.json({ user, token });
+  c.header('Set-Cookie', sessionCookie(token));
+  return c.json({ user: canonicalUser, token });
+});
+
+authRoutes.get('/me', (c) => {
+  const cookie = c.req.header('Cookie') ?? '';
+  const m = cookie.match(/(?:^|;\s*)session=([^;]+)/);
+  if (!m) return c.json({ error: 'Unauthorized' }, 401);
+  const session = resolveToken(c.env, decodeURIComponent(m[1]));
+  if (!session) return c.json({ error: 'Unauthorized' }, 401);
+  return c.json({ user: session.user, token: session.token });
+});
+
+authRoutes.post('/logout', (c) => {
+  c.header('Set-Cookie', sessionCookie('', true));
+  return c.json({ ok: true });
 });
