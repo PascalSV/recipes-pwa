@@ -41,7 +41,8 @@ export function pageLayout(opts: {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#2a9d6e">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1c1c1e" media="(prefers-color-scheme: dark)">
 ${IOS_META}
 <title>${esc(opts.title)} — Rezepte</title>
 ${MANIFEST_LINK}
@@ -68,7 +69,8 @@ export function loginLayout(content: string, lang: Lang): string {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#2a9d6e">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1c1c1e" media="(prefers-color-scheme: dark)">
 ${IOS_META}
 <title>${lang === 'en' ? 'Sign in' : 'Anmelden'} — Rezepte</title>
 ${MANIFEST_LINK}

@@ -43,8 +43,8 @@ app.get('/manifest.json', (c) =>
     description: 'Meine Rezeptsammlung',
     start_url: '/',
     display: 'standalone',
-    background_color: '#f0f4f1',
-    theme_color: '#2a9d6e',
+    background_color: '#f2f2f7',
+    theme_color: '#ffffff',
     icons: [
       { src: '/icon.svg', type: 'image/svg+xml', sizes: 'any', purpose: 'any maskable' },
     ],
