@@ -8,7 +8,19 @@ export function esc(s: string | number): string {
     .replace(/"/g, '&quot;');
 }
 
-export const ICON_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><circle cx="7" cy="7" r="4"/><line x1="7" y1="11" x2="7" y2="21"/><line x1="13" y1="8" x2="22" y2="8"/><line x1="13" y1="13" x2="22" y2="13"/><line x1="13" y1="18" x2="22" y2="18"/></svg>`;
+export const ICON_SVG = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+  <!-- Blade at top (spatula rotated 180°) -->
+  <rect x="3" y="2" width="18" height="9" rx="2"/>
+  <!-- Texture marks on blade -->
+  <line x1="7" y1="7" x2="9" y2="9"/>
+  <line x1="10.5" y1="6.5" x2="12.5" y2="8.5"/>
+  <!-- Neck: narrows from blade width to handle width -->
+  <path d="M8 11L11 14M16 11L13 14"/>
+  <!-- Handle -->
+  <rect x="11" y="14" width="2" height="7.5" rx="1"/>
+  <!-- Hanging hole at bottom of handle -->
+  <circle cx="12" cy="20.5" r="0.75"/>
+</svg>`;
 
 const THEME_SCRIPT = `<script>(function(){var t=localStorage.getItem('theme')||'system';if(t==='dark'||(t==='system'&&matchMedia('(prefers-color-scheme:dark)').matches))document.documentElement.classList.add('dark');else if(t==='light')document.documentElement.classList.add('light');}());<\/script>`;
 
