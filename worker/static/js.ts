@@ -367,6 +367,12 @@ var UNIT_LABELS = { '': '—', g: 'g', kg: 'kg', ml: 'ml', l: 'l', tbsp: 'EL', t
 function createIngRow(ing) {
   var div = document.createElement('div');
   div.className = 'ing-editor-row';
+  // Store the original parsed data as attributes — collectIngredients reads these as
+  // the authoritative source so DOM parsing quirks can never drop an ingredient.
+  div.dataset.ingName   = ing.name   || '';
+  div.dataset.ingAmount = String(ing.amount || 0);
+  div.dataset.ingUnit   = ing.unit   || '';
+  div.dataset.ingRemark = ing.remark || '';
   var opts = UNITS.map(function (u) {
     return '<option value="' + u + '"' + (ing.unit === u ? ' selected' : '') + '>' + UNIT_LABELS[u] + '</option>';
   }).join('');
@@ -393,16 +399,38 @@ function collectIngredients() {
     var nameEl   = row.querySelector('.ing-name');
     var amountEl = row.querySelector('.ing-amount');
     var unitEl   = row.querySelector('.ing-unit');
-    var parsed = splitNameRemark(nameEl ? nameEl.value.trim() : '');
-    var ing = {
-      amount: amountEl ? (parseFloat(amountEl.value) || 0) : 0,
-      name: parsed.name
-    };
-    var unit = unitEl ? unitEl.value : '';
-    if (unit) ing.unit = unit;
-    if (parsed.remark) ing.remark = parsed.remark;
+
+    // Read user-edited values from DOM inputs
+    var rawName   = nameEl   ? nameEl.value.trim()                : '';
+    var rawAmount = amountEl ? (parseFloat(amountEl.value) || 0) : 0;
+    var rawUnit   = unitEl   ? unitEl.value                       : '';
+
+    // data-* attributes are set at row-creation time and are the authoritative fallback.
+    // This prevents ingredients being silently dropped if the DOM input value is somehow
+    // empty due to browser rendering or caching quirks.
+    var storedName   = row.dataset.ingName   || '';
+    var storedAmount = parseFloat(row.dataset.ingAmount || '0') || 0;
+    var storedUnit   = row.dataset.ingUnit   || '';
+    var storedRemark = row.dataset.ingRemark || '';
+
+    // Prefer DOM values (user may have edited), fall back to stored data
+    var effectiveName   = rawName   || storedName;
+    var effectiveAmount = rawName ? rawAmount : storedAmount;
+    var effectiveUnit   = rawUnit   || storedUnit;
+
+    // Extract remark from parentheses if user edited the name field,
+    // otherwise use the remark stored at row-creation time
+    var parsed      = splitNameRemark(effectiveName);
+    var finalName   = parsed.name   || effectiveName;
+    var finalRemark = parsed.remark || (rawName ? '' : storedRemark);
+
+    if (!finalName) return null;
+
+    var ing = { amount: effectiveAmount, name: finalName };
+    if (effectiveUnit) ing.unit = effectiveUnit;
+    if (finalRemark)   ing.remark = finalRemark;
     return ing;
-  }).filter(function (i) { return i.name; });
+  }).filter(function (i) { return i !== null && i.name; });
 }
 
 function collectProcedure() {
