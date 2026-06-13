@@ -4,6 +4,7 @@ const T: Record<string, Record<Lang, string>> = {
   // Navigation
   'back':                   { de: 'Zurück',                         en: 'Back' },
   'cancel':                 { de: 'Abbrechen',                      en: 'Cancel' },
+  'share':                  { de: 'Teilen',                         en: 'Share' },
 
   // Login
   'login.choose_user':      { de: 'Benutzer wählen',                en: 'Choose user' },

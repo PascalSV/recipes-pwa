@@ -202,7 +202,13 @@ function initDetail() {
     });
   };
 
-  window.printRecipe = function () { window.print(); };
+  window.shareRecipe = function () {
+    if (navigator.share) {
+      navigator.share({ title: document.title, url: window.location.href }).catch(function () {});
+    } else {
+      window.print();
+    }
+  };
 }
 
 // ---- New Recipe ----
