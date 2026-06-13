@@ -8,7 +8,7 @@ const PDF_ICON  = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 
 const UNIT_DE: Record<string, string> = {
   g: 'g', kg: 'kg', ml: 'ml', l: 'l',
-  tbsp: 'EL', tsp: 'TL', cup: 'Tasse', piece: 'Stk',
+  tbsp: 'EL', tsp: 'TL', cup: 'Tasse', piece: 'Stk', pck: 'Päck.', prise: 'Prise',
 };
 
 function fmt(n: number): string {

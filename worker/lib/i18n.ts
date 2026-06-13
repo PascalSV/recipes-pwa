@@ -14,7 +14,7 @@ const T: Record<string, Record<Lang, string>> = {
   'login.error':            { de: 'Ungültiges Passwort. Bitte erneut versuchen.', en: 'Invalid password. Please try again.' },
 
   // List
-  'list.title':             { de: 'Rezepte',                        en: 'Recipes' },
+  'list.title':             { de: 'Pascals Rezeptesammlung',        en: "Pascal's Recipe Collection" },
   'list.search_ph':         { de: 'Rezepte suchen…',                en: 'Search recipes…' },
   'list.empty':             { de: 'Noch keine Rezepte vorhanden.',  en: 'No recipes yet.' },
   'list.new':               { de: 'Neues Rezept',                   en: 'New recipe' },

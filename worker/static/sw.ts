@@ -60,18 +60,18 @@ async function networkFirst(req) {
         'text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.10)}' +
       '.icon{width:64px;height:64px;border-radius:50%;background:var(--g);' +
         'display:flex;align-items:center;justify-content:center;margin:0 auto 22px}' +
-      '.icon svg{width:30px;height:30px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}' +
+      '.icon svg{width:30px;height:30px;fill:#fff}' +
       'h1{font-size:20px;font-weight:700;margin-bottom:10px;letter-spacing:-.3px}' +
       'p{font-size:14px;color:var(--t2);line-height:1.55;margin-bottom:28px}' +
       'button{background:var(--g);color:#fff;border:none;border-radius:12px;padding:14px;' +
         'font-size:16px;font-weight:600;cursor:pointer;width:100%;letter-spacing:-.2px}' +
       'button:active{opacity:.85}' +
-      '</style><title>Offline — Rezepte</title></head>' +
+      '</style><title>Offline — Pascals Rezeptesammlung</title></head>' +
       '<body><div class="card">' +
-      '<div class="icon"><svg viewBox="0 0 24 24">' +
-      '<circle cx="7" cy="7" r="4"/>' +
-      '<line x1="10" y1="10" x2="13" y2="14"/>' +
-      '<line x1="14" y1="15.5" x2="18" y2="22"/>' +
+      '<div class="icon"><svg viewBox="0 0 24 24" fill="currentColor">' +
+      '<path fill-rule="evenodd" d="M6.5,2 L17.5,2 C20,4 16,11 14,12.5 L14,13.5 L10,13.5 L10,12.5 C8,11 4,4 6.5,2 Z M9.5,4.5 L9.5,9.5 L10.5,9.5 L10.5,4.5 Z M11.5,4 L11.5,10 L12.5,10 L12.5,4 Z M13.5,4.5 L13.5,9.5 L14.5,9.5 L14.5,4.5 Z"/>' +
+      '<rect x="10" y="13.5" width="4" height="5"/>' +
+      '<polygon points="10.5,20 12,23.5 16,23.5 14.5,20"/>' +
       '</svg></div>' +
       '<h1 id="t"></h1>' +
       '<p id="m"></p>' +

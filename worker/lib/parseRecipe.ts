@@ -14,7 +14,7 @@ const UNIT_MAP: Record<string, Unit> = {
   piece: 'piece', pieces: 'piece', pcs: 'piece',
   scheibe: 'piece', scheiben: 'piece',
   zehe: 'piece', zehen: 'piece',
-  prise: 'piece', prisen: 'piece',
+  prise: 'prise', prisen: 'prise', pinch: 'prise',
   msp: 'piece', messerspitze: 'piece', messerspitzen: 'piece',
   pck: 'pck', päckchen: 'pck', packchen: 'pck', pkg: 'pck', pkt: 'pck',
 };
@@ -182,6 +182,15 @@ export function extractCookingTime(line: string): number | undefined {
   return t > 0 ? t : undefined;
 }
 
+// ---- Portions extraction ----
+
+const PORTIONS_LINE = /^(?:(?:für|for)\s+)?(\d+)\s*(?:Portionen?|Persons?|Servings?)\b/i;
+
+export function extractPortions(line: string): number | undefined {
+  const m = line.match(PORTIONS_LINE);
+  return m ? parseInt(m[1], 10) : undefined;
+}
+
 // ---- Noise filter ----
 
 const NOISE = /^(https?:\/\/|www\.|@|#|Portionen|Portions|Zutaten|Ingredients|Zubereitung|Preparation|Anleitung|Rezept|Recipe|Drucken|Print|Teilen|Share|Bewerten|Rate|Kommentar|Comment|Autor:|Author:|Quelle:|Source:|Foto:|Photo:|Bild:|Schwierigkeitsgrad)/i;
@@ -213,6 +222,7 @@ function mergeProcedure(lines: string[]): string[] {
 export interface ParseResult {
   name?: string;
   cookingTime?: number;
+  defaultPortions?: number;
   ingredients: Ingredient[];
   ingredientSections?: IngredientSection[];
   procedure: string[];
@@ -237,6 +247,7 @@ export function parseRecipeText(text: string): ParseResult {
 
 function parseWithSections(rawLines: string[]): ParseResult {
   let cookingTime: number | undefined;
+  let defaultPortions: number | undefined;
   let recipeName: string | undefined;
   let skipNutritional = false;
 
@@ -259,9 +270,11 @@ function parseWithSections(rawLines: string[]): ParseResult {
     if (/^(?:Zutaten|Ingredients)\b/i.test(line))     { section = 'ingredients'; continue; }
     if (/^(?:Zubereitung|Preparation)\b/i.test(line)) { section = 'procedure'; continue; }
 
-    // Cooking time (universal, any section)
+    // Cooking time and portions (universal, any section)
     const t = extractCookingTime(line);
     if (t !== undefined) { cookingTime = t; continue; }
+    const p = extractPortions(line);
+    if (p !== undefined) { defaultPortions = p; continue; }
 
     if (section === 'header') {
       // First meaningful line before sections = recipe title
@@ -319,9 +332,10 @@ function parseWithSections(rawLines: string[]): ParseResult {
   const hasSubs = sections.length > 1 || sections[0].name !== '';
 
   const result: ParseResult = { ingredients, procedure: mergeProcedure(procedureLines) };
-  if (hasSubs) result.ingredientSections = sections;
-  if (cookingTime !== undefined) result.cookingTime = cookingTime;
-  if (recipeName)                result.name = recipeName;
+  if (hasSubs)                    result.ingredientSections = sections;
+  if (cookingTime !== undefined)  result.cookingTime = cookingTime;
+  if (defaultPortions !== undefined) result.defaultPortions = defaultPortions;
+  if (recipeName)                 result.name = recipeName;
   return result;
 }
 
@@ -329,6 +343,7 @@ function parseWithSections(rawLines: string[]): ParseResult {
 
 function parseWithoutSections(rawLines: string[]): ParseResult {
   let cookingTime: number | undefined;
+  let defaultPortions: number | undefined;
   let skipNutritional = false;
   const cleaned: string[] = [];
 
@@ -341,6 +356,8 @@ function parseWithoutSections(rawLines: string[]): ParseResult {
     if (isNoise(line)) continue;
     const t = extractCookingTime(line);
     if (t !== undefined) { cookingTime = t; continue; }
+    const p = extractPortions(line);
+    if (p !== undefined) { defaultPortions = p; continue; }
     cleaned.push(line);
   }
 
@@ -360,6 +377,7 @@ function parseWithoutSections(rawLines: string[]): ParseResult {
   }
 
   const result: ParseResult = { ingredients, procedure: mergeProcedure(procedureLines) };
-  if (cookingTime !== undefined) result.cookingTime = cookingTime;
+  if (cookingTime !== undefined)     result.cookingTime = cookingTime;
+  if (defaultPortions !== undefined) result.defaultPortions = defaultPortions;
   return result;
 }

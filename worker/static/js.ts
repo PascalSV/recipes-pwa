@@ -419,6 +419,8 @@ function populateForm(recipe) {
   if (nameEl && recipe.name) nameEl.value = recipe.name;
   var timeEl = document.getElementById('recipe-time');
   if (timeEl && recipe.cookingTime) timeEl.value = recipe.cookingTime;
+  var portionsEl = document.getElementById('recipe-portions');
+  if (portionsEl && recipe.defaultPortions) portionsEl.value = recipe.defaultPortions;
   var sectionsEl = document.getElementById('ing-sections');
   if (sectionsEl) {
     sectionsEl.innerHTML = '';
@@ -438,8 +440,8 @@ function populateForm(recipe) {
   }
 }
 
-var UNITS = ['', 'g', 'kg', 'ml', 'l', 'tbsp', 'tsp', 'cup', 'piece', 'pck'];
-var UNIT_LABELS = { '': '—', g: 'g', kg: 'kg', ml: 'ml', l: 'l', tbsp: 'EL', tsp: 'TL', cup: 'Tasse', piece: 'Stk', pck: 'Päck.' };
+var UNITS = ['', 'g', 'kg', 'ml', 'l', 'tbsp', 'tsp', 'cup', 'piece', 'pck', 'prise'];
+var UNIT_LABELS = { '': '—', g: 'g', kg: 'kg', ml: 'ml', l: 'l', tbsp: 'EL', tsp: 'TL', cup: 'Tasse', piece: 'Stk', pck: 'Päck.', prise: 'Prise' };
 
 // ---- Swipe-to-delete for ingredient rows ----
 var _openSwipe = null;

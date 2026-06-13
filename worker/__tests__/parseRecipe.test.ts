@@ -24,7 +24,7 @@ describe('parseUnit', () => {
     expect(parseUnit('Tasse')).toBe('cup');
     expect(parseUnit('Stk')).toBe('piece');
     expect(parseUnit('Zehe')).toBe('piece');
-    expect(parseUnit('Prise')).toBe('piece');
+    expect(parseUnit('Prise')).toBe('prise');
   });
 
   it('maps English units', () => {
@@ -39,6 +39,12 @@ describe('parseUnit', () => {
     expect(parseUnit('packchen')).toBe('pck');
     expect(parseUnit('pck')).toBe('pck');
     expect(parseUnit('Pkt')).toBe('pck');
+  });
+
+  it('maps Prise variants to prise (not piece)', () => {
+    expect(parseUnit('Prise')).toBe('prise');
+    expect(parseUnit('Prisen')).toBe('prise');
+    expect(parseUnit('pinch')).toBe('prise');
   });
 
   it('maps Messerspitze to piece', () => {
@@ -546,6 +552,7 @@ Zubereitung
 
 describe('parseRecipeText (Karamellisierter Reiskuchen)', () => {
   const REISKUCHEN = `Karamellisierter Reiskuchen
+6 Portionen
 Gesamtzeit: 125 Minuten
 Schwierigkeitsgrad: Mittel
 Nährwerte pro Portion
@@ -609,6 +616,10 @@ Zubereitung
 
   it('extracts cookingTime = 125', () => {
     expect(parseRecipeText(REISKUCHEN).cookingTime).toBe(125);
+  });
+
+  it('extracts defaultPortions = 6', () => {
+    expect(parseRecipeText(REISKUCHEN).defaultPortions).toBe(6);
   });
 
   it('does not include nutritional values as ingredients', () => {

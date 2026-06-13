@@ -22,6 +22,7 @@ import { listPage } from './views/list.ts';
 import { detailPage } from './views/detail.ts';
 import { newRecipePage, editRecipePage } from './views/new-recipe.ts';
 import { settingsPage } from './views/settings.ts';
+import { recipeNotFoundPage } from './views/layout.ts';
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -57,9 +58,9 @@ app.get('/sw.js', (c) =>
 
 app.get('/manifest.json', (c) =>
   c.json({
-    name: 'Pascals Rezepte',
+    name: 'Pascals Rezeptesammlung',
     short_name: 'Pascals Rezepte',
-    description: 'Pascals Rezeptsammlung',
+    description: "Pascal's Recipe Collection",
     start_url: '/',
     display: 'standalone',
     background_color: '#f2f2f7',
@@ -106,7 +107,7 @@ app.get('/recipe/:id', async (c) => {
   const session = requirePage(c);
   if (!session) return c.redirect('/login');
   const recipe = await getRecipe(c.env.RECIPES_BUCKET, c.req.param('id'));
-  if (!recipe) return c.notFound();
+  if (!recipe) return c.html(recipeNotFoundPage(lang(c)), 404);
   return c.html(detailPage(recipe, lang(c)));
 });
 
@@ -114,7 +115,7 @@ app.get('/recipe/:id/edit', async (c) => {
   const session = requirePage(c);
   if (!session) return c.redirect('/login');
   const recipe = await getRecipe(c.env.RECIPES_BUCKET, c.req.param('id'));
-  if (!recipe) return c.notFound();
+  if (!recipe) return c.html(recipeNotFoundPage(lang(c)), 404);
   return c.html(editRecipePage(recipe, lang(c)));
 });
 

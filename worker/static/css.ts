@@ -167,6 +167,14 @@ a.list-item:active{background:rgba(42,157,110,.12)}
 .user-btn{padding:14px;border-radius:var(--radius-s);border:1.5px solid var(--border);background:var(--bg-card);color:var(--text);font-size:16px;font-weight:600;transition:all .15s;cursor:pointer}
 .user-btn.selected{border-color:var(--green);background:var(--green-3);color:var(--green)}
 
+/* ── Recipe not-found error page ── */
+.error-page-wrap{display:flex;align-items:center;justify-content:center;min-height:calc(100dvh - 80px);padding:24px}
+.error-page-card{background:var(--glass-bg);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);border:1px solid var(--glass-border);box-shadow:var(--glass-shadow),var(--glass-hi);border-radius:var(--radius);padding:32px 24px 28px;width:100%;max-width:340px;display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center}
+.error-page-icon{width:72px;height:72px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;box-shadow:0 6px 24px rgba(42,157,110,.3)}
+.error-page-icon svg{width:36px;height:36px;color:#fff}
+.error-page-headline{font-size:22px;font-weight:700;letter-spacing:-.3px}
+.error-page-msg{font-size:15px;color:var(--text-2);line-height:1.55}
+
 /* ── New/Edit recipe form ── */
 .form-section{padding:20px 16px 0}
 .form-card{background:var(--glass-bg);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);border:1px solid var(--glass-border);box-shadow:var(--glass-shadow),var(--glass-hi);border-radius:var(--radius);overflow:hidden}
