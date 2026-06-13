@@ -21,7 +21,7 @@ img,svg{display:block}
   --danger:#ff3b30;--danger-bg:#fff1f0;
   --radius:14px;--radius-s:10px;--radius-xs:8px;
   --shadow-s:0 1px 4px rgba(0,0,0,.06);--shadow:0 2px 14px rgba(0,0,0,.09);
-  --nav-h:52px;--safe-t:env(safe-area-inset-top,0px);--safe-b:env(safe-area-inset-bottom,0px)
+  --nav-h:88px;--safe-t:env(safe-area-inset-top,0px);--safe-b:env(safe-area-inset-bottom,0px)
 }
 
 @media(prefers-color-scheme:dark){
@@ -44,11 +44,16 @@ img,svg{display:block}
 }
 
 /* ── Nav ── */
-.nav{position:sticky;top:0;z-index:100;background:var(--bg);color:var(--text);height:calc(var(--nav-h) + var(--safe-t));padding-top:var(--safe-t);display:flex;align-items:center;padding-inline:4px;border-bottom:1px solid var(--border-2)}
-.nav-title{flex:1;font-size:17px;font-weight:600;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-inline:8px;color:var(--green)}
+.nav{position:sticky;top:0;z-index:100;background:var(--bg);padding-top:var(--safe-t);border-bottom:1px solid var(--border-2)}
+.nav-row{display:flex;align-items:center;height:44px;padding-inline:4px}
+.nav-left{display:flex;align-items:center}
+.nav-right{display:flex;align-items:center;margin-left:auto}
+.nav-title{font-size:26px;font-weight:700;letter-spacing:-.5px;color:var(--text);padding:2px 16px 12px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .nav-btn{display:flex;align-items:center;justify-content:center;min-width:44px;height:44px;background:transparent;border:none;color:var(--green);border-radius:var(--radius-xs);flex-shrink:0;transition:background .15s;font-size:14px;font-weight:500;gap:4px;padding-inline:10px;white-space:nowrap;text-decoration:none}
 .nav-btn svg{width:22px;height:22px;flex-shrink:0}
 .nav-btn:active{background:var(--green-3)}
+.nav-btn-danger{color:var(--danger)}
+.nav-btn-danger:active{background:var(--danger-bg)}
 
 /* ── Page ── */
 .page{padding-bottom:calc(44px + var(--safe-b));max-width:700px;margin:0 auto}
@@ -94,10 +99,11 @@ a.list-item:active{background:var(--bg-sel)}
 .recipe-content{background:var(--bg-card);border-radius:var(--radius);box-shadow:var(--shadow-s);overflow:hidden}
 
 /* ── Portion bar ── */
-.portion-bar{position:sticky;top:calc(var(--nav-h) + var(--safe-t));z-index:50;background:var(--bg-card);border-bottom:1px solid var(--border-2);padding:10px 20px;display:flex;align-items:center;justify-content:center;gap:20px;box-shadow:var(--shadow-s)}
-.portion-btn{width:36px;height:36px;border-radius:50%;background:var(--green-3);color:var(--green);border:none;font-size:22px;line-height:1;display:flex;align-items:center;justify-content:center;transition:background .1s;font-weight:300}
-.portion-btn:active{background:var(--green-4)}
-.portion-label{font-size:16px;font-weight:600;color:var(--text);min-width:90px;text-align:center}
+.portion-bar{position:sticky;top:calc(var(--nav-h) + var(--safe-t));z-index:50;background:var(--bg);border-bottom:1px solid var(--border-2);padding:10px 20px;display:flex;align-items:center;justify-content:center;gap:0}
+.portion-btn{width:32px;height:32px;border-radius:50%;background:transparent;color:var(--green);border:1.5px solid var(--green);font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center;transition:background .1s;font-weight:300}
+.portion-btn:active{background:var(--green-3)}
+.portion-label{font-size:15px;font-weight:600;color:var(--text);min-width:96px;text-align:center}
+.portion-sep{width:1px;height:18px;background:var(--border-2);margin:0 16px}
 
 /* ── Ingredient rows (detail page) ── */
 .ingredient-row{padding:11px 20px;border-bottom:1px solid var(--border-2);display:flex;align-items:baseline;gap:12px}
@@ -153,8 +159,10 @@ a.list-item:active{background:var(--bg-sel)}
 .form-section{padding:20px 16px 0}
 .form-card{background:var(--bg-card);border-radius:var(--radius);box-shadow:var(--shadow-s);overflow:hidden}
 .form-card-padded{padding:16px}
-.ing-editor-row{display:grid;grid-template-columns:70px 60px 1fr 36px;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border-2)}
-.ing-editor-row:last-child{border-bottom:none}
+.ing-swipe-wrap{position:relative;overflow:hidden;border-bottom:1px solid var(--border-2)}
+.ing-swipe-wrap:last-child{border-bottom:none}
+.ing-swipe-delete{position:absolute;right:0;top:0;bottom:0;width:80px;background:#ff3b30;color:#fff;border:none;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;letter-spacing:.01em}
+.ing-editor-row{display:grid;grid-template-columns:60px 70px 1fr;gap:8px;align-items:center;padding:10px 0;position:relative;z-index:1;background:var(--bg-card);will-change:transform}
 .ing-editor-row .input,.ing-editor-row .select{padding:9px 10px;font-size:15px}
 .ing-editor-row .select{padding-right:28px}
 .del-btn{width:32px;height:32px;border-radius:50%;background:transparent;color:var(--text-3);border:none;font-size:20px;display:flex;align-items:center;justify-content:center;transition:color .12s;flex-shrink:0}
@@ -178,4 +186,30 @@ a.list-item:active{background:var(--bg-sel)}
 /* ── Toast ── */
 .toast{position:fixed;bottom:calc(24px + var(--safe-b));left:50%;transform:translateX(-50%);background:rgba(28,28,30,.9);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);color:#fff;padding:11px 22px;border-radius:100px;font-size:15px;font-weight:500;z-index:999;pointer-events:none;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.2);animation:fadein .2s ease}
 @keyframes fadein{from{opacity:0;transform:translateX(-50%) translateY(6px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+/* ── Custom dialog ── */
+.dialog-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:flex-end;justify-content:center;padding-bottom:calc(16px + var(--safe-b));animation:fadeIn .18s ease}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.dialog-sheet{background:var(--bg-card);border-radius:var(--radius) var(--radius) 0 0;width:100%;max-width:480px;padding:20px 16px 8px;display:flex;flex-direction:column;gap:10px;animation:slideUp .22s ease}
+@keyframes slideUp{from{transform:translateY(32px)}to{transform:translateY(0)}}
+.dialog-title{font-size:17px;font-weight:700;color:var(--text);text-align:center;padding-bottom:2px}
+.dialog-msg{font-size:14px;color:var(--text-2);text-align:center;line-height:1.5;padding-bottom:6px}
+.dialog-action{width:100%;padding:15px;border-radius:var(--radius-s);border:none;font-size:16px;font-weight:600;cursor:pointer;margin-bottom:0}
+.dialog-action-danger{background:#ff3b30;color:#fff}
+.dialog-action-cancel{background:var(--border-2);color:var(--text-2);margin-bottom:8px}
+
+.print-title{display:none}
+
+/* ── Print / PDF ── */
+@media print{
+  .nav,.portion-bar{display:none!important}
+  .print-title{display:block!important;font-size:22pt;font-weight:700;font-family:Georgia,serif;padding:0 20px 12pt;border-bottom:1pt solid #ccc;margin-bottom:16pt}
+  body{background:#fff!important;color:#000!important}
+  .page{padding:0!important;max-width:none!important;margin:0!important}
+  .recipe-section{margin:0 0 16pt!important}
+  .recipe-section-label{font-size:9pt!important;letter-spacing:.1em!important;color:#666!important;border-bottom:0.5pt solid #ccc;padding-bottom:4pt!important}
+  .recipe-content{background:#fff!important;box-shadow:none!important;border-radius:0!important}
+  .ingredient-row,.step{border-bottom:0.4pt solid #e0e0e0!important}
+  @page{margin:20mm;size:A4}
+}
 `;

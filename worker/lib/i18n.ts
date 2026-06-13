@@ -3,6 +3,7 @@ export type Lang = 'de' | 'en';
 const T: Record<string, Record<Lang, string>> = {
   // Navigation
   'back':                   { de: 'Zurück',                         en: 'Back' },
+  'cancel':                 { de: 'Abbrechen',                      en: 'Cancel' },
 
   // Login
   'login.choose_user':      { de: 'Benutzer wählen',                en: 'Choose user' },

@@ -73,6 +73,28 @@ function toast(msg) {
   setTimeout(() => el.remove(), 2200);
 }
 
+function showDialog(opts) {
+  var overlay = document.createElement('div');
+  overlay.className = 'dialog-overlay';
+  overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
+  var sheet = document.createElement('div');
+  sheet.className = 'dialog-sheet';
+  if (opts.title) { var t = document.createElement('div'); t.className = 'dialog-title'; t.textContent = opts.title; sheet.appendChild(t); }
+  if (opts.message) { var m = document.createElement('div'); m.className = 'dialog-msg'; m.textContent = opts.message; sheet.appendChild(m); }
+  var ok = document.createElement('button');
+  ok.className = 'dialog-action ' + (opts.isDanger ? 'dialog-action-danger' : 'btn btn-primary');
+  ok.textContent = opts.confirmText || 'OK';
+  ok.onclick = function() { overlay.remove(); opts.onConfirm(); };
+  var cancel = document.createElement('button');
+  cancel.className = 'dialog-action dialog-action-cancel';
+  cancel.textContent = opts.cancelText || 'Abbrechen';
+  cancel.onclick = function() { overlay.remove(); };
+  sheet.appendChild(ok);
+  sheet.appendChild(cancel);
+  overlay.appendChild(sheet);
+  document.body.appendChild(overlay);
+}
+
 // ---- Token restoration ----
 // If localStorage.token is missing on a protected page, restore it from the
 // session cookie via /api/auth/me so that API calls include a Bearer token.
@@ -141,10 +163,7 @@ function initList() {
       });
   }
 
-  refreshList();
-  window.addEventListener('pageshow', function (e) {
-    if (e.persisted) refreshList();
-  });
+  window.addEventListener('pageshow', function () { refreshList(); });
 
   var search = document.getElementById('search');
   if (!search) return;
@@ -182,29 +201,7 @@ function initDetail() {
     });
   };
 
-  window.shareIngredients = async function () {
-    const lines = [];
-    document.querySelectorAll('.ingredient-row').forEach(function (row) {
-      const amount = (row.querySelector('.ing-amount') || {}).textContent || '';
-      const unit   = (row.querySelector('.ing-unit')   || {}).textContent || '';
-      const name   = (row.querySelector('.ing-name,.ing-free') || {}).textContent || '';
-      const remark = (row.querySelector('.ing-remark') || {}).textContent || '';
-      let line = [amount.trim(), unit.trim(), name.trim()].filter(Boolean).join(' ');
-      if (remark.trim()) line += ' (' + remark.trim() + ')';
-      if (line.trim()) lines.push(line);
-    });
-    const text = lines.join('\\n');
-    try {
-      if (navigator.share) {
-        await navigator.share({ text: text });
-      } else {
-        await navigator.clipboard.writeText(text);
-        toast(jst('copied'));
-      }
-    } catch (err) {
-      if (err && err.name !== 'AbortError') toast(jst('share_fail'));
-    }
-  };
+  window.printRecipe = function () { window.print(); };
 }
 
 // ---- New Recipe ----
@@ -326,6 +323,33 @@ function initEdit() {
   if (!recipeId) return;
   initNew();
 
+  window.handleCancel = function() {
+    showDialog({
+      title: 'Änderungen verwerfen?',
+      message: 'Alle nicht gespeicherten Änderungen gehen verloren.',
+      confirmText: 'Verwerfen',
+      isDanger: true,
+      onConfirm: function() { location.href = '/recipe/' + recipeId; }
+    });
+  };
+
+  window.handleDeleteRecipe = function() {
+    showDialog({
+      title: 'Rezept löschen?',
+      message: 'Diese Aktion kann nicht rückgängig gemacht werden.',
+      confirmText: 'Löschen',
+      isDanger: true,
+      onConfirm: async function() {
+        var res = await api('/api/recipes/' + recipeId, { method: 'DELETE' });
+        if (res && res.ok) {
+          location.href = '/';
+        } else {
+          toast('Fehler beim Löschen');
+        }
+      }
+    });
+  };
+
   // Fetch recipe from API — source of truth, guarantees ingredients/steps are current
   api('/api/recipes/' + recipeId).then(function(res) {
     if (!res || !res.ok) return null;
@@ -416,6 +440,22 @@ function populateForm(recipe) {
 var UNITS = ['', 'g', 'kg', 'ml', 'l', 'tbsp', 'tsp', 'cup', 'piece'];
 var UNIT_LABELS = { '': '—', g: 'g', kg: 'kg', ml: 'ml', l: 'l', tbsp: 'EL', tsp: 'TL', cup: 'Tasse', piece: 'Stk' };
 
+// ---- Swipe-to-delete for ingredient rows ----
+var _openSwipe = null;
+
+function closeAllSwipes(except) {
+  if (_openSwipe && _openSwipe !== except) {
+    var r = _openSwipe.querySelector('.ing-editor-row');
+    if (r) { r.style.transition = 'transform .25s ease'; r.style.transform = ''; }
+    _openSwipe._swOpen = false;
+    _openSwipe = null;
+  }
+}
+
+document.addEventListener('touchstart', function(e) {
+  if (_openSwipe && !_openSwipe.contains(e.target)) closeAllSwipes(null);
+}, { passive: true });
+
 function createIngRow(ing) {
   var div = document.createElement('div');
   div.className = 'ing-editor-row';
@@ -435,9 +475,64 @@ function createIngRow(ing) {
   div.innerHTML =
     '<input type="number" class="input ing-amount" placeholder="' + jst('amount') + '" min="0" step="any" value="' + amountVal + '">' +
     '<select class="select ing-unit">' + opts + '</select>' +
-    '<input type="text" class="input ing-name" placeholder="' + jst('ingredient') + '" value="' + esc(nameVal) + '">' +
-    '<button type="button" class="del-btn" onclick="this.closest(\\'.ing-editor-row\\').remove()">×</button>';
-  return div;
+    '<input type="text" class="input ing-name" placeholder="' + jst('ingredient') + '" value="' + esc(nameVal) + '">';
+
+  var wrap = document.createElement('div');
+  wrap.className = 'ing-swipe-wrap';
+
+  var delBtn = document.createElement('button');
+  delBtn.type = 'button';
+  delBtn.className = 'ing-swipe-delete';
+  delBtn.textContent = 'Löschen';
+  delBtn.addEventListener('click', function() { wrap.remove(); });
+
+  wrap.appendChild(div);
+  wrap.appendChild(delBtn);
+
+  var DEL_W = 80;
+  var swStartX, swStartY, swTracking, swBase;
+
+  div.addEventListener('touchstart', function(e) {
+    if (e.touches.length !== 1) return;
+    swStartX = e.touches[0].clientX;
+    swStartY = e.touches[0].clientY;
+    swTracking = null;
+    swBase = wrap._swOpen ? -DEL_W : 0;
+    div.style.transition = 'none';
+  }, { passive: true });
+
+  div.addEventListener('touchmove', function(e) {
+    if (e.touches.length !== 1) return;
+    var dx = e.touches[0].clientX - swStartX;
+    var dy = e.touches[0].clientY - swStartY;
+    if (!swTracking) {
+      if (Math.abs(dx) < 5 && Math.abs(dy) < 5) return;
+      swTracking = Math.abs(dx) >= Math.abs(dy) ? 'h' : 'v';
+    }
+    if (swTracking !== 'h') return;
+    e.preventDefault();
+    var offset = Math.max(-DEL_W, Math.min(0, swBase + dx));
+    div.style.transform = 'translateX(' + offset + 'px)';
+  }, { passive: false });
+
+  div.addEventListener('touchend', function(e) {
+    if (swTracking !== 'h') return;
+    var dx = e.changedTouches[0].clientX - swStartX;
+    div.style.transition = 'transform .25s ease';
+    var open = wrap._swOpen ? dx < DEL_W / 2 : -dx >= DEL_W / 2;
+    if (open) {
+      closeAllSwipes(wrap);
+      div.style.transform = 'translateX(-' + DEL_W + 'px)';
+      wrap._swOpen = true;
+      _openSwipe = wrap;
+    } else {
+      div.style.transform = '';
+      wrap._swOpen = false;
+      if (_openSwipe === wrap) _openSwipe = null;
+    }
+  }, { passive: true });
+
+  return wrap;
 }
 
 function splitNameRemark(raw) {

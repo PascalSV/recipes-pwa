@@ -57,9 +57,9 @@ app.get('/sw.js', (c) =>
 
 app.get('/manifest.json', (c) =>
   c.json({
-    name: 'Rezepte',
-    short_name: 'Rezepte',
-    description: 'Meine Rezeptsammlung',
+    name: 'Pascals Rezepte',
+    short_name: 'Pascals Rezepte',
+    description: 'Pascals Rezeptsammlung',
     start_url: '/',
     display: 'standalone',
     background_color: '#f2f2f7',
@@ -72,7 +72,7 @@ app.get('/manifest.json', (c) =>
 
 app.get('/icon.svg', (c) =>
   c.text(
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#2a9d6e" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICON_SVG.replace(/<svg[^>]*>|<\/svg>/g, '')}</svg>`,
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#2a9d6e">${ICON_SVG.replace(/<svg[^>]*>|<\/svg>/g, '')}</svg>`,
     200,
     { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'public,max-age=86400' }
   )

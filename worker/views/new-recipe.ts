@@ -3,6 +3,7 @@ import { t, type Lang } from '../lib/i18n.ts';
 import type { Recipe } from '../types.ts';
 
 const BACK = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`;
+const TRASH_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`;
 
 const GROUPS = [
   'Fleisch', 'Fisch', 'Pasta', 'Suppe', 'Salat',
@@ -22,7 +23,12 @@ function recipePage({ lang, recipe }: { lang: Lang; recipe?: Recipe }): string {
   const title = isEdit ? t('edit.title', lang) : t('new.title', lang);
   const page  = isEdit ? 'edit' : 'new';
 
-  const navLeft   = `<a href="${isEdit ? `/recipe/${esc(recipe!.id)}` : '/'}" class="nav-btn">${BACK} ${t('back', lang)}</a>`;
+  const navLeft   = isEdit
+    ? `<button type="button" class="nav-btn" onclick="handleCancel()">${t('cancel', lang)}</button>`
+    : `<a href="/" class="nav-btn">${BACK} ${t('back', lang)}</a>`;
+  const navRight  = isEdit
+    ? `<button type="button" class="nav-btn nav-btn-danger" onclick="handleDeleteRecipe()">${TRASH_ICON}</button>`
+    : '';
   const groupOptions = GROUPS.map(g =>
     `<option value="${esc(g)}"${isEdit && recipe!.group === g ? ' selected' : ''}>${esc(g)}</option>`
   ).join('');
@@ -113,7 +119,7 @@ function recipePage({ lang, recipe }: { lang: Lang; recipe?: Recipe }): string {
   `;
 
   return pageLayout({
-    title, page, lang, navLeft, content,
+    title, page, lang, navLeft, navRight, content,
     bodyAttrs: isEdit ? `data-recipe-id="${esc(recipe!.id)}"` : undefined,
   });
 }
