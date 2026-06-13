@@ -14,6 +14,11 @@ export interface Ingredient {
   remark?: string;
 }
 
+export interface IngredientSection {
+  name: string;
+  ingredients: Ingredient[];
+}
+
 export interface Recipe {
   id: string;
   name: string;
@@ -21,6 +26,7 @@ export interface Recipe {
   defaultPortions: number;
   cookingTime?: number;  // minutes
   ingredients: Ingredient[];
+  ingredientSections?: IngredientSection[];
   procedure: string[];
   createdAt: string;
   updatedAt: string;

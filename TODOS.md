@@ -1,8 +1,3 @@
-- in edit mode, a delete button is missing - pressing delete should bring up a dialog asking for confirmation
-- in edit mode, a cancel button is missing - pressing cancel should bring up a dialog asking for confirmation
-- never use the browser dialog function but always create own dialogs for confirmation
-- The recipe view has a share button but I would prefer if this would create a PDF file of the recipe
-- The row hat contains the number of portions and the time for the dish is a solid block which is old-school. Please remove the solid background and introduce some slim, nice lookig seperators
-- Always remember that this app is running on a mobile device, an iPhone, so adapt font sizes, buttons sizes etc accordingly
-- The list of recipes is not updated when the main view is displayed. Thats bad, especially when recipes have been deleted
-- use the kochloeffel icon as it is, just chnage the color
+- when an ingridient is deleted by swiping, the delete button has no round corners and no - at least small - padding
+- all titles should also be colored in green
+- 

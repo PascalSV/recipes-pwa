@@ -159,6 +159,15 @@ a.list-item:active{background:var(--bg-sel)}
 .form-section{padding:20px 16px 0}
 .form-card{background:var(--bg-card);border-radius:var(--radius);box-shadow:var(--shadow-s);overflow:hidden}
 .form-card-padded{padding:16px}
+/* ── Ingredient sections (edit form) ── */
+.ing-section-header-row{display:flex;align-items:center;gap:6px;padding:10px 0 6px;border-bottom:1px solid var(--border-2)}
+.ing-section+.ing-section>.ing-section-header-row{margin-top:4px}
+.ing-section-name{flex:1;background:transparent;border:none;border-bottom:1.5px solid transparent;outline:none;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-2);padding:2px 0;transition:border-color .15s,color .15s}
+.ing-section-name:focus{border-bottom-color:var(--green);color:var(--text)}
+.ing-section-name::placeholder{color:var(--text-3);font-weight:600;text-transform:none;letter-spacing:0}
+/* ── Ingredient section labels (detail view) ── */
+.ing-sub-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--text-3);padding:10px 20px 4px;border-top:1px solid var(--border-2)}
+.recipe-content>.ing-sub-label:first-child{border-top:none}
 .ing-swipe-wrap{position:relative;overflow:hidden;border-bottom:1px solid var(--border-2)}
 .ing-swipe-wrap:last-child{border-bottom:none}
 .ing-swipe-delete{position:absolute;right:0;top:0;bottom:0;width:80px;background:#ff3b30;color:#fff;border:none;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;letter-spacing:.01em}

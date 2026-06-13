@@ -46,7 +46,7 @@ async function networkFirst(req) {
     return res;
   } catch {
     const cached = await caches.match(req);
-    return cached ?? new Response('Offline', { status: 503, headers: { 'Content-Type': 'text/plain' } });
+    return cached ?? new Response('Du bisch offline', { status: 503, headers: { 'Content-Type': 'text/plain' } });
   }
 }
 `;

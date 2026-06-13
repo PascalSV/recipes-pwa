@@ -1,5 +1,5 @@
 import { pageLayout, esc } from './layout.ts';
-import type { Recipe } from '../types.ts';
+import type { Recipe, Ingredient } from '../types.ts';
 import { t, type Lang } from '../lib/i18n.ts';
 
 const BACK = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`;
@@ -25,33 +25,40 @@ function formatCookingTime(minutes: number): string {
 
 const CLOCK_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;flex-shrink:0"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`;
 
+function renderIngredientRow(ing: Ingredient): string {
+  const unitLabel = ing.unit ? UNIT_DE[ing.unit] ?? ing.unit : '';
+  if (ing.amount === 0) {
+    return `<div class="ingredient-row">
+      <div class="ing-qty"></div>
+      <div class="ing-details">
+        <span class="ing-free">${esc(ing.name)}${ing.remark ? ` <em style="font-style:italic;color:var(--text-3);font-size:13px">(${esc(ing.remark)})</em>` : ''}</span>
+      </div>
+    </div>`;
+  }
+  return `<div class="ingredient-row">
+    <div class="ing-qty"><span class="ing-amount" data-amount="${ing.amount}">${esc(fmt(ing.amount))}</span><span class="ing-unit">${unitLabel ? '&thinsp;' + esc(unitLabel) : ''}</span></div>
+    <div class="ing-details">
+      <span class="ing-name">${esc(ing.name)}</span>
+      ${ing.remark ? `<span class="ing-remark">${esc(ing.remark)}</span>` : ''}
+    </div>
+  </div>`;
+}
+
 export function detailPage(recipe: Recipe, lang: Lang): string {
   const navLeft  = `<a href="/" class="nav-btn">${BACK} ${t('back', lang)}</a>`;
   const navRight = `
     <a href="/recipe/${esc(recipe.id)}/edit" class="nav-btn" title="${esc(t('edit.title', lang))}">${EDIT_ICON}</a>
     <button type="button" class="nav-btn" onclick="printRecipe()" title="PDF">${PDF_ICON}</button>`;
 
-  const ingredients = recipe.ingredients.map(ing => {
-    const unitLabel = ing.unit ? UNIT_DE[ing.unit] ?? ing.unit : '';
-
-    if (ing.amount === 0) {
-      // Free-form ingredient — no quantity, show full-width
-      return `<div class="ingredient-row">
-        <div class="ing-qty"></div>
-        <div class="ing-details">
-          <span class="ing-free">${esc(ing.name)}${ing.remark ? ` <em style="font-style:italic;color:var(--text-3);font-size:13px">(${esc(ing.remark)})</em>` : ''}</span>
-        </div>
-      </div>`;
-    }
-
-    return `<div class="ingredient-row">
-      <div class="ing-qty"><span class="ing-amount" data-amount="${ing.amount}">${esc(fmt(ing.amount))}</span><span class="ing-unit">${unitLabel ? '&thinsp;' + esc(unitLabel) : ''}</span></div>
-      <div class="ing-details">
-        <span class="ing-name">${esc(ing.name)}</span>
-        ${ing.remark ? `<span class="ing-remark">${esc(ing.remark)}</span>` : ''}
-      </div>
-    </div>`;
-  }).join('');
+  let ingredients: string;
+  if (recipe.ingredientSections && recipe.ingredientSections.length > 0) {
+    ingredients = recipe.ingredientSections.map(section =>
+      (section.name ? `<div class="ing-sub-label">${esc(section.name)}</div>` : '') +
+      section.ingredients.map(renderIngredientRow).join('')
+    ).join('');
+  } else {
+    ingredients = recipe.ingredients.map(renderIngredientRow).join('');
+  }
 
   const procedure = recipe.procedure.map((step, i) => `
     <div class="step">

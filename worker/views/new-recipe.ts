@@ -90,9 +90,9 @@ function recipePage({ lang, recipe }: { lang: Lang; recipe?: Recipe }): string {
         <div class="field-label" style="padding-bottom:8px">${t('new.ingredients', lang)}</div>
         <div class="form-card">
           <div class="form-card-padded">
-            <div id="ing-list"></div>
-            <button type="button" class="btn btn-secondary btn-block btn-sm mt-8" onclick="addIngredient()">
-              ${t('new.add_ingredient', lang)}
+            <div id="ing-sections"></div>
+            <button type="button" class="btn btn-secondary btn-block btn-sm mt-8" onclick="addSection()">
+              + ${lang === 'en' ? 'Add section' : 'Abschnitt hinzufügen'}
             </button>
           </div>
         </div>

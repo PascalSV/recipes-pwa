@@ -5,8 +5,8 @@ export const JS = `
 // ---- Language ----
 var _lang = document.body.dataset.lang || 'de';
 var _T = {
-  de: { amount:'Menge', ingredient:'Zutat', describe_step:'Schritt beschreiben…', offline:'Offline gespeichert – wird synchronisiert', copied:'In Zwischenablage kopiert', share_fail:'Teilen fehlgeschlagen', portions:'Portionen', portion:'Portion', save:'Speichern', extract:'Extrahieren' },
-  en: { amount:'Amount', ingredient:'Ingredient', describe_step:'Describe step…', offline:'Saved offline – will sync', copied:'Copied to clipboard', share_fail:'Sharing failed', portions:'Portions', portion:'Portion', save:'Save', extract:'Extract' }
+  de: { amount:'Menge', ingredient:'Zutat', describe_step:'Schritt beschreiben…', offline:'Offline gespeichert – wird synchronisiert', copied:'In Zwischenablage kopiert', share_fail:'Teilen fehlgeschlagen', portions:'Portionen', portion:'Portion', save:'Speichern', extract:'Extrahieren', add_ingredient:'Zutat hinzufügen' },
+  en: { amount:'Amount', ingredient:'Ingredient', describe_step:'Describe step…', offline:'Saved offline – will sync', copied:'Copied to clipboard', share_fail:'Sharing failed', portions:'Portions', portion:'Portion', save:'Save', extract:'Extract', add_ingredient:'Add ingredient' }
 };
 function jst(key) { return (_T[_lang] || _T.de)[key] || key; }
 
@@ -263,6 +263,7 @@ function initNew() {
       name: name,
       group: (document.getElementById('recipe-group') || {}).value || 'Sonstiges',
       defaultPortions: parseInt((document.getElementById('recipe-portions') || {}).value || '4', 10),
+      ingredientSections: collectIngredientSections(),
       ingredients: collectIngredients(),
       procedure: collectProcedure(),
       createdAt: now,
@@ -291,10 +292,19 @@ function initNew() {
     }
   };
 
-  window.addIngredient = function () {
-    var list = document.getElementById('ing-list');
-    if (list) list.appendChild(createIngRow({}));
+  window.addSection = function () {
+    var container = document.getElementById('ing-sections');
+    if (!container) return;
+    container.appendChild(createSection({ name: '', ingredients: [] }));
+    updateSectionDeleteBtns();
   };
+
+  // Initialize one default section if the container is empty
+  var _sectionsEl = document.getElementById('ing-sections');
+  if (_sectionsEl && _sectionsEl.children.length === 0) {
+    _sectionsEl.appendChild(createSection({ name: '', ingredients: [] }));
+    updateSectionDeleteBtns();
+  }
 
   window.addStep = function () {
     var list = document.getElementById('steps-list');
@@ -383,6 +393,7 @@ function initEdit() {
         name: name,
         group: (document.getElementById('recipe-group') || {}).value || 'Sonstiges',
         defaultPortions: parseInt((document.getElementById('recipe-portions') || {}).value || '4', 10),
+        ingredientSections: collectIngredientSections(),
         ingredients: collectIngredients(),
         procedure: collectProcedure(),
         createdAt: _recipe.createdAt,
@@ -414,12 +425,15 @@ function populateForm(recipe) {
   if (nameEl && recipe.name) nameEl.value = recipe.name;
   var timeEl = document.getElementById('recipe-time');
   if (timeEl && recipe.cookingTime) timeEl.value = recipe.cookingTime;
-  var list = document.getElementById('ing-list');
-  if (list) {
-    list.innerHTML = '';
-    (recipe.ingredients || []).forEach(function (ing) {
-      list.appendChild(createIngRow(ing));
-    });
+  var sectionsEl = document.getElementById('ing-sections');
+  if (sectionsEl) {
+    sectionsEl.innerHTML = '';
+    if (recipe.ingredientSections && recipe.ingredientSections.length > 0) {
+      recipe.ingredientSections.forEach(function(s) { sectionsEl.appendChild(createSection(s)); });
+    } else {
+      sectionsEl.appendChild(createSection({ name: '', ingredients: recipe.ingredients || [] }));
+    }
+    updateSectionDeleteBtns();
   }
   var steps = document.getElementById('steps-list');
   if (steps) {
@@ -535,49 +549,105 @@ function createIngRow(ing) {
   return wrap;
 }
 
+function updateSectionDeleteBtns() {
+  var sections = document.querySelectorAll('#ing-sections .ing-section');
+  var count = sections.length;
+  sections.forEach(function(s) {
+    var btn = s.querySelector('.ing-section-del');
+    if (btn) btn.style.visibility = count > 1 ? 'visible' : 'hidden';
+  });
+}
+
+function createSection(sectionData) {
+  var section = document.createElement('div');
+  section.className = 'ing-section';
+
+  var headerRow = document.createElement('div');
+  headerRow.className = 'ing-section-header-row';
+
+  var nameInput = document.createElement('input');
+  nameInput.type = 'text';
+  nameInput.className = 'ing-section-name';
+  nameInput.placeholder = _lang === 'en' ? 'Section (e.g. Dough, Filling…)' : 'Abschnitt (z.B. Teig, Füllung…)';
+  nameInput.value = sectionData.name || '';
+
+  var delBtn = document.createElement('button');
+  delBtn.type = 'button';
+  delBtn.className = 'del-btn ing-section-del';
+  delBtn.textContent = '×';
+  delBtn.addEventListener('click', function() {
+    section.remove();
+    updateSectionDeleteBtns();
+  });
+
+  headerRow.appendChild(nameInput);
+  headerRow.appendChild(delBtn);
+
+  var list = document.createElement('div');
+  list.className = 'ing-section-list';
+  (sectionData.ingredients || []).forEach(function(ing) {
+    list.appendChild(createIngRow(ing));
+  });
+
+  var addIngBtn = document.createElement('button');
+  addIngBtn.type = 'button';
+  addIngBtn.className = 'btn btn-secondary btn-block btn-sm mt-8';
+  addIngBtn.textContent = jst('add_ingredient');
+  addIngBtn.addEventListener('click', function() {
+    list.appendChild(createIngRow({}));
+  });
+
+  section.appendChild(headerRow);
+  section.appendChild(list);
+  section.appendChild(addIngBtn);
+  return section;
+}
+
 function splitNameRemark(raw) {
   var m = raw.match(/^(.*?)\\s*\\(([^)]+)\\)\\s*$/);
   if (!m) return { name: raw.trim(), remark: '' };
   return { name: m[1].trim(), remark: m[2].trim() };
 }
 
-function collectIngredients() {
-  return Array.from(document.querySelectorAll('.ing-editor-row')).map(function (row) {
+function collectIngredientsFromList(list) {
+  if (!list) return [];
+  return Array.from(list.querySelectorAll('.ing-editor-row')).map(function(row) {
     var nameEl   = row.querySelector('.ing-name');
     var amountEl = row.querySelector('.ing-amount');
     var unitEl   = row.querySelector('.ing-unit');
-
-    // Read user-edited values from DOM inputs
-    var rawName   = nameEl   ? nameEl.value.trim()                : '';
+    var rawName   = nameEl   ? nameEl.value.trim()               : '';
     var rawAmount = amountEl ? (parseFloat(amountEl.value) || 0) : 0;
-    var rawUnit   = unitEl   ? unitEl.value                       : '';
-
-    // data-* attributes are set at row-creation time and are the authoritative fallback.
-    // This prevents ingredients being silently dropped if the DOM input value is somehow
-    // empty due to browser rendering or caching quirks.
+    var rawUnit   = unitEl   ? unitEl.value                      : '';
     var storedName   = row.dataset.ingName   || '';
     var storedAmount = parseFloat(row.dataset.ingAmount || '0') || 0;
     var storedUnit   = row.dataset.ingUnit   || '';
     var storedRemark = row.dataset.ingRemark || '';
-
-    // Prefer DOM values (user may have edited), fall back to stored data
     var effectiveName   = rawName   || storedName;
     var effectiveAmount = rawName ? rawAmount : storedAmount;
     var effectiveUnit   = rawUnit   || storedUnit;
-
-    // Extract remark from parentheses if user edited the name field,
-    // otherwise use the remark stored at row-creation time
     var parsed      = splitNameRemark(effectiveName);
     var finalName   = parsed.name   || effectiveName;
     var finalRemark = parsed.remark || (rawName ? '' : storedRemark);
-
     if (!finalName) return null;
-
     var ing = { amount: effectiveAmount, name: finalName };
     if (effectiveUnit) ing.unit = effectiveUnit;
     if (finalRemark)   ing.remark = finalRemark;
     return ing;
-  }).filter(function (i) { return i !== null && i.name; });
+  }).filter(function(i) { return i !== null && i.name; });
+}
+
+function collectIngredientSections() {
+  return Array.from(document.querySelectorAll('#ing-sections .ing-section')).map(function(section) {
+    var nameEl = section.querySelector('.ing-section-name');
+    var name = nameEl ? nameEl.value.trim() : '';
+    var list = section.querySelector('.ing-section-list');
+    return { name: name, ingredients: collectIngredientsFromList(list) };
+  }).filter(function(s) { return s.ingredients.length > 0; });
+}
+
+function collectIngredients() {
+  var sections = collectIngredientSections();
+  return sections.reduce(function(acc, s) { return acc.concat(s.ingredients); }, []);
 }
 
 function collectProcedure() {
