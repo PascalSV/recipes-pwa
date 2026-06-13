@@ -5,7 +5,7 @@ export interface Env {
   ALLOWED_USERS: string;
 }
 
-export type Unit = 'g' | 'kg' | 'ml' | 'l' | 'tbsp' | 'tsp' | 'cup' | 'piece' | 'pck' | 'prise';
+export type Unit = 'g' | 'kg' | 'ml' | 'l' | 'tbsp' | 'tsp' | 'cup' | 'piece' | 'pck' | 'prise' | 'bunch';
 
 export interface Ingredient {
   amount: number;

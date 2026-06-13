@@ -17,6 +17,7 @@ const UNIT_MAP: Record<string, Unit> = {
   prise: 'prise', prisen: 'prise', pinch: 'prise',
   msp: 'piece', messerspitze: 'piece', messerspitzen: 'piece',
   pck: 'pck', päckchen: 'pck', packchen: 'pck', pkg: 'pck', pkt: 'pck',
+  bund: 'bunch', bünde: 'bunch', bunch: 'bunch', bunches: 'bunch',
 };
 
 export function parseUnit(raw: string): Unit | undefined {
