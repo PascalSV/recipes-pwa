@@ -73,10 +73,17 @@ async function networkFirst(req) {
       '<line x1="10" y1="10" x2="13" y2="14"/>' +
       '<line x1="14" y1="15.5" x2="18" y2="22"/>' +
       '</svg></div>' +
-      '<h1>Keine Verbindung</h1>' +
-      '<p>Du bisch offline. Überprüf dini Verbindung und versuchs nomol.</p>' +
-      '<button onclick="location.reload()">Erneut versuchen</button>' +
-      '</div></body></html>';
+      '<h1 id="t"></h1>' +
+      '<p id="m"></p>' +
+      '<button id="b" onclick="location.reload()"></button>' +
+      '</div>' +
+      '<script>' +
+      'var c=document.cookie,en=c.indexOf("lang=en")>-1||(c.indexOf("lang=")<0&&navigator.language.startsWith("en"));' +
+      'document.getElementById("t").textContent=en?"No connection":"Keine Verbindung";' +
+      'document.getElementById("m").textContent=en?"This page isn\'t available offline. Please check your internet connection and try again.":"Diese Seite ist offline nicht verfügbar. Bitte prüfe deine Verbindung und versuche es erneut.";' +
+      'document.getElementById("b").textContent=en?"Try again":"Erneut versuchen";' +
+      '</script>' +
+      '</body></html>';
     return cached ?? new Response(offlineHtml, { status: 503, headers: { 'Content-Type': 'text/html;charset=UTF-8' } });
   }
 }

@@ -1,3 +1,0 @@
-- when an ingridient is deleted by swiping, the delete button has no round corners and no - at least small - padding
-- all titles should also be colored in green
-- 

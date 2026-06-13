@@ -1,4 +1,4 @@
-import type { Ingredient, Unit } from '../types.ts';
+import type { Ingredient, IngredientSection, Unit } from '../types.ts';
 
 // ---- Unit normalisation ----
 
@@ -15,7 +15,8 @@ const UNIT_MAP: Record<string, Unit> = {
   scheibe: 'piece', scheiben: 'piece',
   zehe: 'piece', zehen: 'piece',
   prise: 'piece', prisen: 'piece',
-  msp: 'piece',
+  msp: 'piece', messerspitze: 'piece', messerspitzen: 'piece',
+  pck: 'pck', päckchen: 'pck', packchen: 'pck', pkg: 'pck', pkt: 'pck',
 };
 
 export function parseUnit(raw: string): Unit | undefined {
@@ -213,6 +214,7 @@ export interface ParseResult {
   name?: string;
   cookingTime?: number;
   ingredients: Ingredient[];
+  ingredientSections?: IngredientSection[];
   procedure: string[];
 }
 
@@ -276,25 +278,48 @@ function parseWithSections(rawLines: string[]): ParseResult {
   // Join orphan amount-only lines with the following name line
   const joinedIngredients = joinOrphanAmountLines(ingredientLines);
 
-  const ingredients: Ingredient[] = [];
+  // Classify each line as a parsed ingredient or a text item (potential section header or free-form)
+  type LineResult = { kind: 'ingredient'; ing: Ingredient } | { kind: 'text'; line: string };
+  const parsed: LineResult[] = [];
   for (const line of joinedIngredients) {
     if (INGR_LINE.test(line)) {
       for (const part of splitCompound(line)) {
         const ing = parseIngredientLine(part);
-        if (ing) ingredients.push(ing);
+        if (ing) parsed.push({ kind: 'ingredient', ing });
       }
     } else {
-      // Free-form ingredient (no amount) — listed in the Zutaten section
-      const { name, remark } = extractRemark(line.trim());
-      if (name) {
-        const ing: Ingredient = { amount: 0, name };
-        if (remark) ing.remark = remark;
-        ingredients.push(ing);
+      const trimmed = line.trim();
+      if (trimmed) parsed.push({ kind: 'text', line: trimmed });
+    }
+  }
+
+  // Group into sections: a text line whose immediate next item is an ingredient = section header.
+  // Otherwise it's a free-form ingredient (amount: 0) in the current section.
+  const sections: IngredientSection[] = [{ name: '', ingredients: [] }];
+  for (let i = 0; i < parsed.length; i++) {
+    const item = parsed[i];
+    if (item.kind === 'ingredient') {
+      sections[sections.length - 1].ingredients.push(item.ing);
+    } else {
+      const nextItem = parsed[i + 1];
+      if (nextItem && nextItem.kind === 'ingredient') {
+        sections.push({ name: item.line, ingredients: [] });
+      } else {
+        const { name, remark } = extractRemark(item.line);
+        if (name) {
+          const ing: Ingredient = { amount: 0, name };
+          if (remark) ing.remark = remark;
+          sections[sections.length - 1].ingredients.push(ing);
+        }
       }
     }
   }
 
+  const ingredients: Ingredient[] = sections.flatMap((s) => s.ingredients);
+  const hasSubs = sections.length > 1 || sections[0].name !== '';
+
   const result: ParseResult = { ingredients, procedure: mergeProcedure(procedureLines) };
+  if (hasSubs) result.ingredientSections = sections;
   if (cookingTime !== undefined) result.cookingTime = cookingTime;
   if (recipeName)                result.name = recipeName;
   return result;

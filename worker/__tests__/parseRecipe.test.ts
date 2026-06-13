@@ -34,6 +34,18 @@ describe('parseUnit', () => {
     expect(parseUnit('cups')).toBe('cup');
   });
 
+  it('maps Päckchen variants to pck', () => {
+    expect(parseUnit('Päckchen')).toBe('pck');
+    expect(parseUnit('packchen')).toBe('pck');
+    expect(parseUnit('pck')).toBe('pck');
+    expect(parseUnit('Pkt')).toBe('pck');
+  });
+
+  it('maps Messerspitze to piece', () => {
+    expect(parseUnit('Messerspitze')).toBe('piece');
+    expect(parseUnit('messerspitzen')).toBe('piece');
+  });
+
   it('is case-insensitive', () => {
     expect(parseUnit('G')).toBe('g');
     expect(parseUnit('ML')).toBe('ml');
@@ -527,5 +539,155 @@ Zubereitung
     const { procedure } = parseRecipeText(PALOCLEVES);
     expect(procedure.length).toBeGreaterThanOrEqual(3);
     expect(procedure.some((s) => s.includes('Knoblauch'))).toBe(true);
+  });
+});
+
+// ---- parseRecipeText — Karamellisierter Reiskuchen (ingredient sections) ----
+
+describe('parseRecipeText (Karamellisierter Reiskuchen)', () => {
+  const REISKUCHEN = `Karamellisierter Reiskuchen
+Gesamtzeit: 125 Minuten
+Schwierigkeitsgrad: Mittel
+Nährwerte pro Portion
+kcal
+618
+Eiweiß
+10,07 g
+Ballaststoffe
+1,19 g
+Fett
+34,48 g
+Zucker
+34,26 g
+Kohlenhydrate
+66,88 g
+Zutaten
+Für den Teig
+1 Prise
+Salz
+0,5 Teelöffel
+Zitrone Schalenabrieb
+75 Gramm
+Zucker
+125 Gramm
+Butter
+1
+Ei
+200 Gramm
+Mehl
+Für den Belag
+125 Gramm
+Rundkornreis
+1 Päckchen
+Vanillezucker
+75 Gramm
+Zucker
+2 Esslöffel
+Zucker, braun
+20 Gramm
+Butter
+2
+Eier
+400 Milliliter
+Milch
+Fett für die Form
+Für den Belag
+40 Gramm
+Butter
+Mehl zum Ausrollen
+Zubereitung
+
+    Für den Teig das Mehl mit dem Zucker, Zitronenabrieb und Salz mischen, auf eine Arbeitsfläche häufeln, in die Mitte eine Mulde drücken, das Ei hineinschlagen und die Butter in Flöckchen um die Mulde herum verteilen. Mit einem Messer sämtliche Zutaten krümelig hacken und mit den Händen rasch zu einem glatten Teig verarbeiten. Zu einer Kugel formen und in Frischhaltefolie gewickelt für 30 Minuten in den Kühlschrank legen. Den Backofen auf 180°C Ober- und Unterhitze vorheizen.
+    Die Milch mit der Butter, dem Zucker und Vanillezucker in einem Topf zum Kochen bringen, den Reis einrieseln lassen und bei kleiner Hitze und gelegentlichem Umrühren ca. 30 Minuten quellen lassen.
+    Eine Tarte- oder Springform einfetten. Den Mürbteig auf leicht bemehlter Fläche rund etwas größer als die Form ausrollen. Die Backform damit auskleiden und den Rand mit den Fingern hochziehen. Den Teigboden mehrmals mit einer Gabel einstechen.
+    Die Eier trennen und das Eiweiß zu steifem Schnee schlagen. Erst die Eigelbe unter den abgekühlten Milchreis rühren, dann den Eischnee unterheben. Den Reisbrei auf den Mürbteigboden verteilen und im Ofen ca. 45 Minuten backen.
+    Für eine leicht karamellisierte Kruste den Reiskuchen zum Schluss mit braunem Zucker bestreuen, Butterflöckchen darauf verteilen, den Backofengrill einschalten und den Zucker in 3 bis 5 Minuten leicht karamellisieren lassen. Die Tarte in Stücke geschnitten servieren.`;
+
+  it('extracts recipe name', () => {
+    expect(parseRecipeText(REISKUCHEN).name).toBe('Karamellisierter Reiskuchen');
+  });
+
+  it('extracts cookingTime = 125', () => {
+    expect(parseRecipeText(REISKUCHEN).cookingTime).toBe(125);
+  });
+
+  it('does not include nutritional values as ingredients', () => {
+    const { ingredients } = parseRecipeText(REISKUCHEN);
+    expect(ingredients.find((i) => i.name === 'kcal')).toBeUndefined();
+    expect(ingredients.find((i) => i.name === 'Eiweiß')).toBeUndefined();
+    expect(ingredients.find((i) => i.name === 'Fett')).toBeUndefined();
+  });
+
+  it('produces ingredientSections (not just flat ingredients)', () => {
+    const { ingredientSections } = parseRecipeText(REISKUCHEN);
+    expect(ingredientSections).toBeDefined();
+  });
+
+  it('has 4 sections total: one empty default, then Für den Teig and twice Für den Belag', () => {
+    const { ingredientSections } = parseRecipeText(REISKUCHEN);
+    expect(ingredientSections).toHaveLength(4);
+    expect(ingredientSections![0].name).toBe('');           // empty default before first header
+    expect(ingredientSections![1].name).toBe('Für den Teig');
+    expect(ingredientSections![2].name).toBe('Für den Belag');
+    expect(ingredientSections![3].name).toBe('Für den Belag');
+  });
+
+  it('"Für den Teig" section has 6 ingredients', () => {
+    const { ingredientSections } = parseRecipeText(REISKUCHEN);
+    const teig = ingredientSections!.find((s) => s.name === 'Für den Teig')!;
+    expect(teig.ingredients).toHaveLength(6);
+  });
+
+  it('"Für den Teig" contains Salz, Butter, Ei, Mehl', () => {
+    const { ingredientSections } = parseRecipeText(REISKUCHEN);
+    const teig = ingredientSections!.find((s) => s.name === 'Für den Teig')!;
+    const names = teig.ingredients.map((i) => i.name);
+    expect(names).toContain('Salz');
+    expect(names).toContain('Butter');
+    expect(names).toContain('Mehl');
+    expect(names.some((n) => n.includes('Ei'))).toBe(true);
+  });
+
+  it('first "Für den Belag" section has 8 ingredients including Fett für die Form (free-form)', () => {
+    const { ingredientSections } = parseRecipeText(REISKUCHEN);
+    const belag = ingredientSections!.filter((s) => s.name === 'Für den Belag')[0];
+    expect(belag.ingredients).toHaveLength(8);
+    expect(belag.ingredients.find((i) => i.name === 'Fett für die Form')).toBeDefined();
+    expect(belag.ingredients.find((i) => i.name === 'Fett für die Form')!.amount).toBe(0);
+  });
+
+  it('second "Für den Belag" section has 2 ingredients: Butter and Mehl zum Ausrollen', () => {
+    const { ingredientSections } = parseRecipeText(REISKUCHEN);
+    const belag2 = ingredientSections!.filter((s) => s.name === 'Für den Belag')[1];
+    expect(belag2.ingredients).toHaveLength(2);
+    expect(belag2.ingredients[0]).toMatchObject({ amount: 40, unit: 'g', name: 'Butter' });
+    expect(belag2.ingredients[1]).toMatchObject({ amount: 0, name: 'Mehl zum Ausrollen' });
+  });
+
+  it('parses Vanillezucker as 1 Päckchen (unit: pck)', () => {
+    const { ingredients } = parseRecipeText(REISKUCHEN);
+    const vanille = ingredients.find((i) => i.name === 'Vanillezucker');
+    expect(vanille).toBeDefined();
+    expect(vanille!.amount).toBe(1);
+    expect(vanille!.unit).toBe('pck');
+  });
+
+  it('flat ingredients array includes all items from all sections', () => {
+    const { ingredients, ingredientSections } = parseRecipeText(REISKUCHEN);
+    const totalFromSections = ingredientSections!.reduce((n, s) => n + s.ingredients.length, 0);
+    expect(ingredients).toHaveLength(totalFromSections);
+  });
+
+  it('Palocleves (no sub-sections) produces no ingredientSections', () => {
+    const flat = parseRecipeText(`Palocleves
+Zutaten
+500 Gramm
+Kartoffeln, festkochend
+2
+Zwiebeln
+Salz
+Zubereitung
+Alles kochen.`);
+    expect(flat.ingredientSections).toBeUndefined();
   });
 });

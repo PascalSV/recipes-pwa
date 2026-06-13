@@ -7,7 +7,7 @@ export const CSS = `
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
-body{font-family:'D-DIN',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100dvh;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
+body{font-family:'D-DIN',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--body-bg);color:var(--text);min-height:100dvh;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
 a{color:inherit;text-decoration:none}
 button{cursor:pointer;font:inherit;-webkit-tap-highlight-color:transparent}
 input,textarea,select{font:inherit}
@@ -21,7 +21,11 @@ img,svg{display:block}
   --danger:#ff3b30;--danger-bg:#fff1f0;
   --radius:14px;--radius-s:10px;--radius-xs:8px;
   --shadow-s:0 1px 4px rgba(0,0,0,.06);--shadow:0 2px 14px rgba(0,0,0,.09);
-  --nav-h:88px;--safe-t:env(safe-area-inset-top,0px);--safe-b:env(safe-area-inset-bottom,0px)
+  --nav-h:88px;--safe-t:env(safe-area-inset-top,0px);--safe-b:env(safe-area-inset-bottom,0px);
+  --body-bg:linear-gradient(150deg,#d5efe3 0%,#f2f2f7 52%,#eae6f5 100%);
+  --nav-bg:rgba(242,242,247,.78);--nav-border:rgba(0,0,0,.06);
+  --glass-bg:rgba(255,255,255,.72);--glass-border:rgba(255,255,255,.65);
+  --glass-hi:inset 0 1px 0 rgba(255,255,255,.85);--glass-shadow:0 8px 32px rgba(0,0,0,.08)
 }
 
 @media(prefers-color-scheme:dark){
@@ -31,7 +35,11 @@ img,svg{display:block}
     --text:#fff;--text-2:#8e8e93;--text-3:#636366;--text-inv:#000;
     --border:#38383a;--border-2:#2c2c2e;
     --danger:#ff453a;--danger-bg:#1a0808;
-    --shadow-s:0 1px 4px rgba(0,0,0,.5);--shadow:0 2px 14px rgba(0,0,0,.6)
+    --shadow-s:0 1px 4px rgba(0,0,0,.5);--shadow:0 2px 14px rgba(0,0,0,.6);
+    --body-bg:linear-gradient(150deg,#041009 0%,#000 52%,#06000f 100%);
+    --nav-bg:rgba(0,0,0,.75);--nav-border:rgba(255,255,255,.07);
+    --glass-bg:rgba(36,36,38,.58);--glass-border:rgba(255,255,255,.08);
+    --glass-hi:inset 0 1px 0 rgba(255,255,255,.05);--glass-shadow:0 8px 32px rgba(0,0,0,.5)
   }
 }
 .dark{
@@ -40,11 +48,15 @@ img,svg{display:block}
   --text:#fff;--text-2:#8e8e93;--text-3:#636366;--text-inv:#000;
   --border:#38383a;--border-2:#2c2c2e;
   --danger:#ff453a;--danger-bg:#1a0808;
-  --shadow-s:0 1px 4px rgba(0,0,0,.5);--shadow:0 2px 14px rgba(0,0,0,.6)
+  --shadow-s:0 1px 4px rgba(0,0,0,.5);--shadow:0 2px 14px rgba(0,0,0,.6);
+  --body-bg:linear-gradient(150deg,#041009 0%,#000 52%,#06000f 100%);
+  --nav-bg:rgba(0,0,0,.75);--nav-border:rgba(255,255,255,.07);
+  --glass-bg:rgba(36,36,38,.58);--glass-border:rgba(255,255,255,.08);
+  --glass-hi:inset 0 1px 0 rgba(255,255,255,.05);--glass-shadow:0 8px 32px rgba(0,0,0,.5)
 }
 
 /* ── Nav ── */
-.nav{position:sticky;top:0;z-index:100;background:var(--bg);padding-top:var(--safe-t);border-bottom:1px solid var(--border-2)}
+.nav{position:sticky;top:0;z-index:100;background:var(--nav-bg);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);padding-top:var(--safe-t);border-bottom:1px solid var(--nav-border)}
 .nav-row{display:flex;align-items:center;height:44px;padding-inline:4px}
 .nav-left{display:flex;align-items:center}
 .nav-right{display:flex;align-items:center;margin-left:auto}
@@ -59,19 +71,19 @@ img,svg{display:block}
 .page{padding-bottom:calc(44px + var(--safe-b));max-width:700px;margin:0 auto}
 
 /* ── Recipe list ── */
-.group-title{padding:32px 20px 10px;font-size:24px;font-weight:700;letter-spacing:-.4px;color:var(--green)}
-.recipe-list{background:var(--bg-card);border-radius:var(--radius);margin:0 16px;box-shadow:var(--shadow-s);overflow:hidden}
-.list-item{display:flex;align-items:center;padding:14px 16px;gap:12px;border-bottom:1px solid var(--border-2);position:relative}
+.group-title{padding:28px 22px 8px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--green)}
+.recipe-list{background:var(--glass-bg);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);border-radius:var(--radius);margin:0 16px;border:1px solid var(--glass-border);box-shadow:var(--glass-shadow),var(--glass-hi);overflow:hidden}
+.list-item{display:flex;align-items:center;padding:15px 16px;gap:12px;border-bottom:1px solid var(--nav-border);position:relative}
 .list-item:last-child{border-bottom:none}
-a.list-item:active{background:var(--bg-sel)}
+a.list-item:active{background:rgba(42,157,110,.12)}
 .list-item-text{flex:1;font-size:17px;font-weight:500;color:var(--text);line-height:1.3}
 .list-item-sub{font-size:13px;color:var(--text-2);margin-top:2px}
-.list-chevron{color:var(--border);flex-shrink:0}
+.list-chevron{color:var(--text-3);flex-shrink:0}
 .list-chevron svg{width:14px;height:14px}
 
 /* ── Search ── */
-.search-wrap{padding:14px 16px 6px}
-.search-input{width:100%;padding:10px 14px 10px 40px;background:var(--bg-card);border:none;border-radius:12px;font-size:16px;color:var(--text);outline:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238e8e93' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");background-repeat:no-repeat;background-size:18px;background-position:12px center;box-shadow:var(--shadow-s)}
+.search-wrap{padding:12px 16px 4px}
+.search-input{width:100%;padding:10px 14px 10px 40px;background-color:var(--glass-bg);backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238e8e93' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3C/svg%3E");background-repeat:no-repeat;background-size:18px;background-position:12px center;border:1px solid var(--glass-border);border-radius:12px;font-size:16px;color:var(--text);outline:none;box-shadow:var(--glass-shadow)}
 .search-input::placeholder{color:var(--text-3)}
 
 /* ── Buttons ── */
@@ -96,10 +108,10 @@ a.list-item:active{background:var(--bg-sel)}
 /* ── Recipe detail sections ── */
 .recipe-section{margin:16px 16px 0}
 .recipe-section-label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text-3);padding:0 4px 8px}
-.recipe-content{background:var(--bg-card);border-radius:var(--radius);box-shadow:var(--shadow-s);overflow:hidden}
+.recipe-content{background:var(--glass-bg);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);border-radius:var(--radius);border:1px solid var(--glass-border);box-shadow:var(--glass-shadow),var(--glass-hi);overflow:hidden}
 
 /* ── Portion bar ── */
-.portion-bar{position:sticky;top:calc(var(--nav-h) + var(--safe-t));z-index:50;background:var(--bg);border-bottom:1px solid var(--border-2);padding:10px 20px;display:flex;align-items:center;justify-content:center;gap:0}
+.portion-bar{position:sticky;top:calc(var(--nav-h) + var(--safe-t));z-index:50;background:var(--nav-bg);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);border-bottom:1px solid var(--nav-border);padding:10px 20px;display:flex;align-items:center;justify-content:center;gap:0}
 .portion-btn{width:32px;height:32px;border-radius:50%;background:transparent;color:var(--green);border:1.5px solid var(--green);font-size:20px;line-height:1;display:flex;align-items:center;justify-content:center;transition:background .1s;font-weight:300}
 .portion-btn:active{background:var(--green-3)}
 .portion-label{font-size:15px;font-weight:600;color:var(--text);min-width:96px;text-align:center}
@@ -137,7 +149,7 @@ a.list-item:active{background:var(--bg-sel)}
 .toggle input:checked+.toggle-track::after{transform:translateX(20px)}
 
 /* ── Settings ── */
-.settings-card{background:var(--bg-card);border-radius:var(--radius);box-shadow:var(--shadow-s);overflow:hidden;margin:0 16px}
+.settings-card{background:var(--glass-bg);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);border-radius:var(--radius);border:1px solid var(--glass-border);box-shadow:var(--glass-shadow),var(--glass-hi);overflow:hidden;margin:0 16px}
 .settings-group-title{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text-3);padding:22px 20px 8px}
 .settings-item{display:flex;align-items:center;padding:14px 20px;border-bottom:1px solid var(--border-2);gap:12px}
 .settings-item:last-child{border-bottom:none}
@@ -145,19 +157,19 @@ a.list-item:active{background:var(--bg-sel)}
 .settings-item-sub{font-size:13px;color:var(--text-3)}
 
 /* ── Login ── */
-.login-wrap{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;gap:32px;background:var(--bg)}
+.login-wrap{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;gap:32px}
 .login-brand{display:flex;flex-direction:column;align-items:center;gap:16px}
-.login-icon{width:80px;height:80px;background:var(--green);border-radius:22px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 24px rgba(42,157,110,.3)}
+.login-icon{width:80px;height:80px;background:var(--green);border-radius:22px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 24px rgba(42,157,110,.35)}
 .login-icon svg{width:46px;height:46px;color:#fff}
 .login-title{font-size:30px;font-weight:700;color:var(--green);letter-spacing:-.5px}
-.login-card{background:var(--bg-card);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;width:100%;max-width:340px;display:flex;flex-direction:column;gap:16px}
+.login-card{background:var(--glass-bg);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);border:1px solid var(--glass-border);box-shadow:var(--glass-shadow),var(--glass-hi);border-radius:var(--radius);padding:24px;width:100%;max-width:340px;display:flex;flex-direction:column;gap:16px}
 .user-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .user-btn{padding:14px;border-radius:var(--radius-s);border:1.5px solid var(--border);background:var(--bg-card);color:var(--text);font-size:16px;font-weight:600;transition:all .15s;cursor:pointer}
 .user-btn.selected{border-color:var(--green);background:var(--green-3);color:var(--green)}
 
 /* ── New/Edit recipe form ── */
 .form-section{padding:20px 16px 0}
-.form-card{background:var(--bg-card);border-radius:var(--radius);box-shadow:var(--shadow-s);overflow:hidden}
+.form-card{background:var(--glass-bg);backdrop-filter:blur(28px) saturate(180%);-webkit-backdrop-filter:blur(28px) saturate(180%);border:1px solid var(--glass-border);box-shadow:var(--glass-shadow),var(--glass-hi);border-radius:var(--radius);overflow:hidden}
 .form-card-padded{padding:16px}
 /* ── Ingredient sections (edit form) ── */
 .ing-section-header-row{display:flex;align-items:center;gap:6px;padding:10px 0 6px;border-bottom:1px solid var(--border-2)}
