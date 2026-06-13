@@ -48,7 +48,7 @@ img,svg{display:block}
 .nav-row{display:flex;align-items:center;height:44px;padding-inline:4px}
 .nav-left{display:flex;align-items:center}
 .nav-right{display:flex;align-items:center;margin-left:auto}
-.nav-title{font-size:26px;font-weight:700;letter-spacing:-.5px;color:var(--text);padding:2px 16px 12px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav-title{font-size:26px;font-weight:700;letter-spacing:-.5px;color:var(--green);padding:2px 16px 12px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .nav-btn{display:flex;align-items:center;justify-content:center;min-width:44px;height:44px;background:transparent;border:none;color:var(--green);border-radius:var(--radius-xs);flex-shrink:0;transition:background .15s;font-size:14px;font-weight:500;gap:4px;padding-inline:10px;white-space:nowrap;text-decoration:none}
 .nav-btn svg{width:22px;height:22px;flex-shrink:0}
 .nav-btn:active{background:var(--green-3)}
@@ -59,7 +59,7 @@ img,svg{display:block}
 .page{padding-bottom:calc(44px + var(--safe-b));max-width:700px;margin:0 auto}
 
 /* ── Recipe list ── */
-.group-title{padding:32px 20px 10px;font-size:24px;font-weight:700;letter-spacing:-.4px;color:var(--text)}
+.group-title{padding:32px 20px 10px;font-size:24px;font-weight:700;letter-spacing:-.4px;color:var(--green)}
 .recipe-list{background:var(--bg-card);border-radius:var(--radius);margin:0 16px;box-shadow:var(--shadow-s);overflow:hidden}
 .list-item{display:flex;align-items:center;padding:14px 16px;gap:12px;border-bottom:1px solid var(--border-2);position:relative}
 .list-item:last-child{border-bottom:none}
@@ -149,7 +149,7 @@ a.list-item:active{background:var(--bg-sel)}
 .login-brand{display:flex;flex-direction:column;align-items:center;gap:16px}
 .login-icon{width:80px;height:80px;background:var(--green);border-radius:22px;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 24px rgba(42,157,110,.3)}
 .login-icon svg{width:46px;height:46px;color:#fff}
-.login-title{font-size:30px;font-weight:700;color:var(--text);letter-spacing:-.5px}
+.login-title{font-size:30px;font-weight:700;color:var(--green);letter-spacing:-.5px}
 .login-card{background:var(--bg-card);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;width:100%;max-width:340px;display:flex;flex-direction:column;gap:16px}
 .user-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .user-btn{padding:14px;border-radius:var(--radius-s);border:1.5px solid var(--border);background:var(--bg-card);color:var(--text);font-size:16px;font-weight:600;transition:all .15s;cursor:pointer}
@@ -176,8 +176,9 @@ a.list-item:active{background:var(--bg-sel)}
 .ing-editor-row .select{padding-right:28px}
 .del-btn{width:32px;height:32px;border-radius:50%;background:transparent;color:var(--text-3);border:none;font-size:20px;display:flex;align-items:center;justify-content:center;transition:color .12s;flex-shrink:0}
 .del-btn:active{color:var(--danger)}
-.step-row{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--border-2)}
-.step-row:last-child{border-bottom:none}
+.step-swipe-wrap{position:relative;overflow:hidden;border-bottom:1px solid var(--border-2)}
+.step-swipe-wrap:last-child{border-bottom:none}
+.step-row{display:flex;align-items:flex-start;gap:8px;padding:6px 0;position:relative;z-index:1;background:var(--bg-card);will-change:transform}
 .step-row .step-num{color:var(--green);font-weight:800;font-size:13px;padding-top:14px;min-width:22px;flex-shrink:0}
 
 /* ── Misc ── */
@@ -197,9 +198,9 @@ a.list-item:active{background:var(--bg-sel)}
 @keyframes fadein{from{opacity:0;transform:translateX(-50%) translateY(6px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 
 /* ── Custom dialog ── */
-.dialog-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;display:flex;align-items:flex-end;justify-content:center;padding-bottom:calc(16px + var(--safe-b));animation:fadeIn .18s ease}
+.dialog-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;animation:fadeIn .18s ease}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-.dialog-sheet{background:var(--bg-card);border-radius:var(--radius) var(--radius) 0 0;width:100%;max-width:480px;padding:20px 16px 8px;display:flex;flex-direction:column;gap:10px;animation:slideUp .22s ease}
+.dialog-sheet{position:fixed;left:0;right:0;bottom:0;z-index:10000;background:var(--bg-card);border-radius:var(--radius) var(--radius) 0 0;padding:20px 16px;padding-bottom:calc(16px + var(--safe-b));display:flex;flex-direction:column;gap:10px;animation:slideUp .22s ease}
 @keyframes slideUp{from{transform:translateY(32px)}to{transform:translateY(0)}}
 .dialog-title{font-size:17px;font-weight:700;color:var(--text);text-align:center;padding-bottom:2px}
 .dialog-msg{font-size:14px;color:var(--text-2);text-align:center;line-height:1.5;padding-bottom:6px}

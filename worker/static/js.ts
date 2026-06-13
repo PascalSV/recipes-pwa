@@ -76,23 +76,24 @@ function toast(msg) {
 function showDialog(opts) {
   var overlay = document.createElement('div');
   overlay.className = 'dialog-overlay';
-  overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
   var sheet = document.createElement('div');
   sheet.className = 'dialog-sheet';
-  if (opts.title) { var t = document.createElement('div'); t.className = 'dialog-title'; t.textContent = opts.title; sheet.appendChild(t); }
-  if (opts.message) { var m = document.createElement('div'); m.className = 'dialog-msg'; m.textContent = opts.message; sheet.appendChild(m); }
+  function close() { overlay.remove(); sheet.remove(); }
+  overlay.addEventListener('click', function(e) { if (e.target === overlay) close(); });
+  if (opts.title) { var ti = document.createElement('div'); ti.className = 'dialog-title'; ti.textContent = opts.title; sheet.appendChild(ti); }
+  if (opts.message) { var mi = document.createElement('div'); mi.className = 'dialog-msg'; mi.textContent = opts.message; sheet.appendChild(mi); }
   var ok = document.createElement('button');
   ok.className = 'dialog-action ' + (opts.isDanger ? 'dialog-action-danger' : 'btn btn-primary');
   ok.textContent = opts.confirmText || 'OK';
-  ok.onclick = function() { overlay.remove(); opts.onConfirm(); };
+  ok.onclick = function() { close(); opts.onConfirm(); };
   var cancel = document.createElement('button');
   cancel.className = 'dialog-action dialog-action-cancel';
   cancel.textContent = opts.cancelText || 'Abbrechen';
-  cancel.onclick = function() { overlay.remove(); };
+  cancel.onclick = close;
   sheet.appendChild(ok);
   sheet.appendChild(cancel);
-  overlay.appendChild(sheet);
   document.body.appendChild(overlay);
+  document.body.appendChild(sheet);
 }
 
 // ---- Token restoration ----
@@ -309,15 +310,8 @@ function initNew() {
   window.addStep = function () {
     var list = document.getElementById('steps-list');
     if (!list) return;
-    var idx = list.querySelectorAll('.step-row').length;
-    var div = document.createElement('div');
-    div.className = 'step-row';
-    div.style.cssText = 'display:flex;align-items:flex-start;gap:8px;margin-top:8px';
-    div.innerHTML =
-      '<span class="step-num">' + (idx + 1) + '</span>' +
-      '<textarea class="textarea step-input" rows="2" placeholder="' + jst('describe_step') + '" style="flex:1"></textarea>' +
-      '<button type="button" class="del-btn" onclick="this.closest(\\'.step-row\\').remove();renumberSteps()">×</button>';
-    list.appendChild(div);
+    var idx = list.querySelectorAll('.step-swipe-wrap').length;
+    list.appendChild(createStepRow('', idx));
   };
 
   window.renumberSteps = function () {
@@ -438,15 +432,8 @@ function populateForm(recipe) {
   var steps = document.getElementById('steps-list');
   if (steps) {
     steps.innerHTML = '';
-    (recipe.procedure || []).forEach(function (step, i) {
-      var div = document.createElement('div');
-      div.className = 'step-row';
-      div.style.cssText = 'display:flex;align-items:flex-start;gap:8px;' + (i > 0 ? 'margin-top:8px' : '');
-      div.innerHTML =
-        '<span class="step-num">' + (i + 1) + '</span>' +
-        '<textarea class="textarea step-input" rows="2" style="flex:1">' + esc(step) + '</textarea>' +
-        '<button type="button" class="del-btn" onclick="this.closest(\\'.step-row\\').remove();renumberSteps()">×</button>';
-      steps.appendChild(div);
+    (recipe.procedure || []).forEach(function(step, i) {
+      steps.appendChild(createStepRow(step, i));
     });
   }
 }
@@ -459,7 +446,7 @@ var _openSwipe = null;
 
 function closeAllSwipes(except) {
   if (_openSwipe && _openSwipe !== except) {
-    var r = _openSwipe.querySelector('.ing-editor-row');
+    var r = _openSwipe.querySelector('.ing-editor-row, .step-row');
     if (r) { r.style.transition = 'transform .25s ease'; r.style.transform = ''; }
     _openSwipe._swOpen = false;
     _openSwipe = null;
@@ -601,6 +588,81 @@ function createSection(sectionData) {
   section.appendChild(list);
   section.appendChild(addIngBtn);
   return section;
+}
+
+function createStepRow(text, idx) {
+  var wrap = document.createElement('div');
+  wrap.className = 'step-swipe-wrap';
+
+  var delBtn = document.createElement('button');
+  delBtn.type = 'button';
+  delBtn.className = 'ing-swipe-delete';
+  delBtn.textContent = 'Löschen';
+  delBtn.addEventListener('click', function() { wrap.remove(); renumberSteps(); });
+
+  var row = document.createElement('div');
+  row.className = 'step-row';
+
+  var num = document.createElement('span');
+  num.className = 'step-num';
+  num.textContent = String(idx + 1).padStart(2, '0');
+
+  var ta = document.createElement('textarea');
+  ta.className = 'textarea step-input';
+  ta.rows = 2;
+  ta.style.flex = '1';
+  ta.placeholder = jst('describe_step');
+  if (text) ta.value = text;
+
+  row.appendChild(num);
+  row.appendChild(ta);
+  wrap.appendChild(delBtn);
+  wrap.appendChild(row);
+
+  var DEL_W = 80;
+  var swStartX, swStartY, swTracking, swBase;
+
+  row.addEventListener('touchstart', function(e) {
+    if (e.touches.length !== 1) return;
+    swStartX = e.touches[0].clientX;
+    swStartY = e.touches[0].clientY;
+    swTracking = null;
+    swBase = wrap._swOpen ? -DEL_W : 0;
+    row.style.transition = 'none';
+  }, { passive: true });
+
+  row.addEventListener('touchmove', function(e) {
+    if (e.touches.length !== 1) return;
+    var dx = e.touches[0].clientX - swStartX;
+    var dy = e.touches[0].clientY - swStartY;
+    if (!swTracking) {
+      if (Math.abs(dx) < 5 && Math.abs(dy) < 5) return;
+      swTracking = Math.abs(dx) >= Math.abs(dy) ? 'h' : 'v';
+    }
+    if (swTracking !== 'h') return;
+    e.preventDefault();
+    var offset = Math.max(-DEL_W, Math.min(0, swBase + dx));
+    row.style.transform = 'translateX(' + offset + 'px)';
+  }, { passive: false });
+
+  row.addEventListener('touchend', function(e) {
+    if (swTracking !== 'h') return;
+    var dx = e.changedTouches[0].clientX - swStartX;
+    row.style.transition = 'transform .25s ease';
+    var open = wrap._swOpen ? dx < DEL_W / 2 : -dx >= DEL_W / 2;
+    if (open) {
+      closeAllSwipes(wrap);
+      row.style.transform = 'translateX(-' + DEL_W + 'px)';
+      wrap._swOpen = true;
+      _openSwipe = wrap;
+    } else {
+      row.style.transform = '';
+      wrap._swOpen = false;
+      if (_openSwipe === wrap) _openSwipe = null;
+    }
+  }, { passive: true });
+
+  return wrap;
 }
 
 function splitNameRemark(raw) {
