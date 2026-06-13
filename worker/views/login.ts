@@ -1,11 +1,11 @@
-import { loginLayout, ICON_SVG, esc } from './layout.ts';
+import { loginLayout, esc } from './layout.ts';
 import { t, type Lang } from '../lib/i18n.ts';
 
 export function loginPage(lang: Lang, error?: string): string {
   return loginLayout(`
 <div class="login-wrap">
   <div class="login-brand">
-    <div class="login-icon">${ICON_SVG}</div>
+    <div class="login-icon"><img src="/icon.png" alt="" style="width:46px;height:46px;object-fit:contain;filter:brightness(0)invert(1)"></div>
     <div class="login-title">Rezepte</div>
   </div>
   <div class="login-card">

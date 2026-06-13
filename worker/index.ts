@@ -16,12 +16,12 @@ import {
 } from './static/fontdata.ts';
 import { JS } from './static/js.ts';
 import { SW } from './static/sw.ts';
+import { ICON_PNG } from './static/icondata.ts';
 import { loginPage } from './views/login.ts';
 import { listPage } from './views/list.ts';
 import { detailPage } from './views/detail.ts';
 import { newRecipePage, editRecipePage } from './views/new-recipe.ts';
 import { settingsPage } from './views/settings.ts';
-import { ICON_SVG } from './views/layout.ts';
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -65,18 +65,15 @@ app.get('/manifest.json', (c) =>
     background_color: '#f2f2f7',
     theme_color: '#ffffff',
     icons: [
-      { src: '/icon.svg', type: 'image/svg+xml', sizes: 'any', purpose: 'any maskable' },
+      { src: '/icon.png', type: 'image/png', sizes: '512x512', purpose: 'any maskable' },
     ],
   }, 200, { 'Cache-Control': 'public,max-age=86400' })
 );
 
-app.get('/icon.svg', (c) =>
-  c.text(
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#2a9d6e">${ICON_SVG.replace(/<svg[^>]*>|<\/svg>/g, '')}</svg>`,
-    200,
-    { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'public,max-age=86400' }
-  )
-);
+app.get('/icon.png', () => {
+  const bytes = Uint8Array.from(atob(ICON_PNG), ch => ch.charCodeAt(0));
+  return new Response(bytes, { headers: { 'Content-Type': 'image/png', 'Cache-Control': 'public,max-age=86400' } });
+});
 
 // ---- API routes ----
 

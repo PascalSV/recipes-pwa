@@ -8,14 +8,11 @@ export function esc(s: string | number): string {
     .replace(/"/g, '&quot;');
 }
 
-export const ICON_SVG = `<svg viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-  <path fill-rule="evenodd" d="M4.5 1.5 Q3 1.5 3 3 L3 6 L9 12 L10.5 12 L10.5 22.5 Q10.5 23.5 12 23.5 Q13.5 23.5 13.5 22.5 L13.5 12 L15 12 L21 6 L21 3 Q21 1.5 19.5 1.5 L4.5 1.5 Z M8 3.5 Q8 2.5 9 2.5 Q10 2.5 10 3.5 L10 8.5 Q10 9.5 9 9.5 Q8 9.5 8 8.5 Z M11 3.5 Q11 2.5 12 2.5 Q13 2.5 13 3.5 L13 8.5 Q13 9.5 12 9.5 Q11 9.5 11 8.5 Z M14 3.5 Q14 2.5 15 2.5 Q16 2.5 16 3.5 L16 8.5 Q16 9.5 15 9.5 Q14 9.5 14 8.5 Z"/>
-</svg>`;
 
 const THEME_SCRIPT = `<script>(function(){var t=localStorage.getItem('theme')||'system';if(t==='dark'||(t==='system'&&matchMedia('(prefers-color-scheme:dark)').matches))document.documentElement.classList.add('dark');else if(t==='light')document.documentElement.classList.add('light');}());<\/script>`;
 
 const MANIFEST_LINK = `<link rel="manifest" href="/manifest.json">`;
-const FAVICON_LINK = `<link rel="icon" href="/icon.svg" type="image/svg+xml">`;
+const FAVICON_LINK = `<link rel="icon" href="/icon.png" type="image/png">`;
 
 const IOS_META = `
 <meta name="apple-mobile-web-app-capable" content="yes">
