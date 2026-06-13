@@ -12,6 +12,15 @@ export async function getRecipe(bucket: R2Bucket, id: string): Promise<Recipe | 
   return obj.json<Recipe>();
 }
 
+export async function deleteRecipe(bucket: R2Bucket, id: string): Promise<void> {
+  await bucket.delete(`recipes/${id}.json`);
+  const index = await getIndex(bucket);
+  index.recipes = index.recipes.filter(r => r.id !== id);
+  await bucket.put('index.json', JSON.stringify(index), {
+    httpMetadata: { contentType: 'application/json' },
+  });
+}
+
 export async function saveRecipe(bucket: R2Bucket, recipe: Recipe): Promise<void> {
   await bucket.put(`recipes/${recipe.id}.json`, JSON.stringify(recipe), {
     httpMetadata: { contentType: 'application/json' },

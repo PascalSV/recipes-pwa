@@ -200,8 +200,8 @@ a.list-item:active{background:var(--bg-sel)}
 /* ── Custom dialog ── */
 .dialog-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:9999;animation:fadeIn .18s ease}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-.dialog-sheet{position:fixed;left:0;right:0;bottom:0;z-index:10000;background:var(--bg-card);border-radius:var(--radius) var(--radius) 0 0;padding:20px 16px;padding-bottom:calc(16px + var(--safe-b));display:flex;flex-direction:column;gap:10px;animation:slideUp .22s ease}
-@keyframes slideUp{from{transform:translateY(32px)}to{transform:translateY(0)}}
+.dialog-sheet{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:calc(100% - 40px);max-width:440px;z-index:10000;background:var(--bg-card);border-radius:var(--radius);padding:24px 20px 16px;display:flex;flex-direction:column;gap:10px;animation:scaleIn .18s ease}
+@keyframes scaleIn{from{opacity:0;transform:translate(-50%,-50%) scale(.94)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
 .dialog-title{font-size:17px;font-weight:700;color:var(--text);text-align:center;padding-bottom:2px}
 .dialog-msg{font-size:14px;color:var(--text-2);text-align:center;line-height:1.5;padding-bottom:6px}
 .dialog-action{width:100%;padding:15px;border-radius:var(--radius-s);border:none;font-size:16px;font-weight:600;cursor:pointer;margin-bottom:0}

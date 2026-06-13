@@ -598,7 +598,7 @@ function createStepRow(text, idx) {
   delBtn.type = 'button';
   delBtn.className = 'ing-swipe-delete';
   delBtn.textContent = 'Löschen';
-  delBtn.addEventListener('click', function() { wrap.remove(); renumberSteps(); });
+  delBtn.addEventListener('click', function() { wrap.remove(); if (window.renumberSteps) window.renumberSteps(); });
 
   var row = document.createElement('div');
   row.className = 'step-row';

@@ -160,18 +160,23 @@ test.describe('Recipe Import', () => {
     }
   });
 
-  // e2e/recipe-import.spec.ts
-  test('Cancel delete ingredient', async ({ page }) => {
-    await page.goto('/edit-recipe');
-    
-    // Add ingredient
-    await page.click('#add-ingredient');
-    
-    // Delete ingredient
-    await page.click('.del-btn');
-    await page.click('button:has-text("Cancel")'); // Cancel dialog
-    
-    // Verify item remains
-    await expect(page.locator('.ing-editor-row')).toBeVisible();
+  test('ingredient delete button removes the row immediately (no dialog)', async ({ page }) => {
+    // Parse the recipe to get ingredients into the form
+    await page.goto('/recipe/new');
+    await page.fill('#paste-input', PALOCLEVES_TEXT);
+    await page.click('#parse-btn');
+    await expect(page.locator('.ing-editor-row').first()).toBeVisible({ timeout: 15000 });
+
+    const countBefore = await page.locator('.ing-editor-row').count();
+
+    // Fire the delete click directly (button is hidden behind swipe overlay)
+    await page.evaluate(() => {
+      const btn = document.querySelector('.ing-swipe-wrap .ing-swipe-delete') as HTMLButtonElement;
+      if (btn) btn.click();
+    });
+
+    // No confirmation dialog — the row should be gone immediately
+    await expect(page.locator('.ing-editor-row')).toHaveCount(countBefore - 1);
+    await expect(page.locator('.dialog-sheet')).not.toBeAttached();
   });
 });
