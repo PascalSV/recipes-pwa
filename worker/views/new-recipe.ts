@@ -7,7 +7,7 @@ const TRASH_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 
 const GROUPS = [
   'Fleisch', 'Fisch', 'Pasta', 'Suppe', 'Salat',
-  'Vorspeise', 'Dessert', 'Backen', 'Sonstiges',
+  'Beilage', 'Vorspeise', 'Dessert', 'Backen', 'Sonstiges',
 ];
 
 export function newRecipePage(lang: Lang): string {

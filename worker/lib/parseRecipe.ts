@@ -61,11 +61,13 @@ export function isOrphanAmountLine(line: string): boolean {
   const trimmed = line.trim();
   // Bare number (possibly a range), no unit or name
   if (/^(?:ca\.?\s*|~\s*)?\d[\d.,]*(?:\s*(?:bis|-)\s*\d[\d.,]*)?\s*$/.test(trimmed)) return true;
-  // Amount + single recognised unit, nothing else
+  // Amount + single word, nothing else
   const m = trimmed.match(AMOUNT_EXTRACT);
   if (!m) return false;
   const words = m[2].trim().split(/\s+/);
-  return words.length === 1 && parseUnit(words[0]) !== undefined;
+  if (words.length !== 1) return false;
+  // Recognised unit ("1 EL") or lowercase-only adjective ("1 kleine") — name comes on next line
+  return parseUnit(words[0]) !== undefined || /^[a-zäöüß]+$/.test(words[0]);
 }
 
 function joinOrphanAmountLines(lines: string[]): string[] {
@@ -223,9 +225,14 @@ export function isProcedureLine(line: string): boolean {
 
 function mergeProcedure(lines: string[]): string[] {
   if (lines.length === 0) return [];
-  const full = lines.join(' ');
-  const sentences = full.split(/(?<=[.!?])\s+(?=[A-ZÄÖÜ])/);
-  return sentences.map((s) => s.trim()).filter((s) => s.length > 0);
+  // Replace periods in common abbreviations with a placeholder so they don't trigger sentence splits
+  const ABBREVS = /\b(ca|evt|evtl|bzw|usw|etc|ggf|sog|inkl|min|max)\./gi;
+  const full = lines.join(' ').replace(ABBREVS, '$1\x00');
+  const sentences = full
+    .split(/(?<=[.!?])\s+(?=[A-ZÄÖÜ])/)
+    .map((s) => s.replace(/\x00/g, '.').trim())
+    .filter((s) => s.length > 0);
+  return sentences;
 }
 
 // ---- Result type ----
@@ -267,6 +274,9 @@ function parseWithSections(rawLines: string[]): ParseResult {
 
   const ingredientLines: string[] = [];
   const procedureLines: string[] = [];
+  // Numbered step grouping (Chefkoch bare-digit step markers)
+  const procedureGroups: string[][] = [];
+  let currentStepGroup: string[] | null = null;
 
   for (const line of rawLines) {
     // Nutritional block state machine
@@ -294,12 +304,30 @@ function parseWithSections(rawLines: string[]): ParseResult {
     } else if (section === 'ingredients') {
       // Filter URLs, social tags, and known UI noise strings (Bring!, etc.)
       // Note: do NOT use isNoise() here — it rejects 1-3 char strings like bare amounts "2", "1 EL"
-      if (!/^(https?:\/\/|www\.|@|#)/.test(line) && !NOISE.test(line)) ingredientLines.push(line);
+      if (!/^(https?:\/\/|www\.|@|#)/.test(line) && !NOISE.test(line)) {
+        // Chefkoch ingredient tables sometimes have name\tremark in one cell — split at first tab
+        const tabIdx = line.indexOf('\t');
+        if (tabIdx > 0) {
+          const name = line.slice(0, tabIdx).trim();
+          const remark = line.slice(tabIdx + 1).trim();
+          ingredientLines.push(remark ? `${name} (${remark})` : name);
+        } else {
+          ingredientLines.push(line);
+        }
+      }
     } else if (section === 'procedure') {
       if (/^(?:Tipp\b|Hinweis\b)/i.test(line)) break; // stop at tips/notes
-      if (isProcedureLine(line)) procedureLines.push(line);
+      // Bare digit = Chefkoch step number — use as paragraph boundary
+      if (/^\d+\s*$/.test(line)) {
+        if (currentStepGroup !== null) procedureGroups.push(currentStepGroup);
+        currentStepGroup = [];
+      } else if (isProcedureLine(line)) {
+        procedureLines.push(line);
+        currentStepGroup?.push(line);
+      }
     }
   }
+  if (currentStepGroup !== null) procedureGroups.push(currentStepGroup);
 
   // Join orphan amount-only lines with the following name line
   const joinedIngredients = joinOrphanAmountLines(ingredientLines);
@@ -319,8 +347,10 @@ function parseWithSections(rawLines: string[]): ParseResult {
     }
   }
 
-  // Group into sections: a text line whose immediate next item is an ingredient = section header.
-  // Otherwise it's a free-form ingredient (amount: 0) in the current section.
+  // Group into sections: a text line is a section header only if it reads like one
+  // (starts with "Für"/"For" or ends with ":") AND the next item is an ingredient.
+  // Everything else is a free-form ingredient (amount: 0).
+  const SECTION_HEADER = /^(?:für|for)\s|:\s*$/i;
   const sections: IngredientSection[] = [{ name: '', ingredients: [] }];
   for (let i = 0; i < parsed.length; i++) {
     const item = parsed[i];
@@ -328,7 +358,7 @@ function parseWithSections(rawLines: string[]): ParseResult {
       sections[sections.length - 1].ingredients.push(item.ing);
     } else {
       const nextItem = parsed[i + 1];
-      if (nextItem && nextItem.kind === 'ingredient') {
+      if (nextItem && nextItem.kind === 'ingredient' && SECTION_HEADER.test(item.line)) {
         sections.push({ name: item.line, ingredients: [] });
       } else {
         const { name, remark } = extractRemark(item.line);
@@ -344,7 +374,12 @@ function parseWithSections(rawLines: string[]): ParseResult {
   const ingredients: Ingredient[] = sections.flatMap((s) => s.ingredients);
   const hasSubs = sections.length > 1 || sections[0].name !== '';
 
-  const result: ParseResult = { ingredients, procedure: mergeProcedure(procedureLines) };
+  // Use numbered step groups when detected (Chefkoch format), else sentence-split
+  const procedure = procedureGroups.length > 0
+    ? procedureGroups.map((g) => g.join(' ').trim()).filter(Boolean)
+    : mergeProcedure(procedureLines);
+
+  const result: ParseResult = { ingredients, procedure };
   if (hasSubs)                    result.ingredientSections = sections;
   if (cookingTime !== undefined)  result.cookingTime = cookingTime;
   if (defaultPortions !== undefined) result.defaultPortions = defaultPortions;

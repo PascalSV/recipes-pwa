@@ -826,3 +826,162 @@ Hinweis vom Chefkoch-Team: Die Mengenangabe bezieht sich auf 1 Dip.`;
     expect(allText).toContain('Avocados halbieren');
   });
 });
+
+// ---- Brezen - Servietten - Knödel (Chefkoch.de format) ----
+
+describe('Brezen - Servietten - Knödel', () => {
+  // Chefkoch ingredient tables separate name and remark with a tab character
+  const BREZEN = `Brezen - Servietten - Knödel
+Nährwerte pro Portion
+-- kcal
+Energie
+-- g
+Eiweiß
+-- g
+Fett
+-- g
+Kohlenhydrate
+Zutaten
+Für 4 Portionen
+6
+\t
+Brezel(n)
+1 kleine
+\t
+Zwiebel(n)
+100 g
+\t
+Speck\tgeräuchert, in Würfeln
+2 EL
+\t
+Butter
+2 EL
+\t
+Petersilie\tgehackt
+200 ml
+\t
+Milch
+3
+\t
+Ei(er)
+\t
+Salz und Pfeffer
+2
+\t
+Semmel(n)
+\t
+Muskat
+\t
+Majoran
+Bring! Logo Auf die Einkaufsliste setzen
+Zubereitung
+
+35 Min.
+Gesamtzeit
+
+35 Min.
+Arbeitszeit
+1
+
+Brezen und Semmeln in Scheiben schneiden. Die Hälfte der Brezen auf einem Backblech verteilen und mit Butterflocken belegen. Bei 180 Grad im Ofen rösten, bis sie schön hellbraun/rösch sind.
+2
+
+Zwiebel in feine Würfel schneiden, Speck in einer Pfanne anbraten, Zwiebel dazugeben und mit Salz, Pfeffer und Majoran würzen. Milch heiß werden lassen.
+3
+
+Rest der Brezen und die Semmeln in eine Schüssel geben. Milch und Speckzwiebel darüber schütten und 5 Minuten ziehen lassen. Die röschen Brezenscheibchen, die Eier und die Petersilie dazugeben. Mit Muskat und evt. Salz und Pfeffer würzen und gut durchmengen (nicht kneten), bis der Teig zu binden beginnt.
+4
+
+Ein sauberes Küchen-/Geschirrtuch nass machen, auswringen und auf dem Küchentisch ausbreiten. Die Masse am Rand der langen Seite draufgeben und grob eine Wurst mit etwa 8-9-cm-Durchmesser formen. Dann den Teig eng in das Tuch einrollen. An einer Seite mit Paketgarn zubinden und die Wurst mit etwa 5-6 Schlaufen Garn umwickeln. Auf der anderen Seite den anderen Zipfel zubinden. Jetzt müsste die Rolle schön stabil sein.
+5
+
+In kochendes Salzwasser (Bräter/Topf) einlegen. Den Herd zurückdrehen, sodass das Wasser siedet, aber nicht kocht. Etwa 40 Minuten darin garen. Aus dem Wasser nehmen, vom Tuch befreien und in Scheiben schneiden.
+6
+
+Passt zu Ragout, Gulasch, Braten und allem, zu dem man sonst Knödel, Klöße, Gnidla isst.`;
+
+  const r = parseRecipeText(BREZEN);
+
+  it('extracts recipe name', () => {
+    expect(r.name).toBe('Brezen - Servietten - Knödel');
+  });
+
+  it('extracts cookingTime 35', () => {
+    expect(r.cookingTime).toBe(35);
+  });
+
+  it('extracts defaultPortions 4', () => {
+    expect(r.defaultPortions).toBe(4);
+  });
+
+  it('no ingredientSections — Für 4 Portionen is not a section header', () => {
+    expect(r.ingredientSections).toBeUndefined();
+  });
+
+  it('has 11 ingredients', () => {
+    expect(r.ingredients).toHaveLength(11);
+  });
+
+  it('Brezel(n) → Brezeln, amount 6', () => {
+    const ing = r.ingredients[0];
+    expect(ing.amount).toBe(6);
+    expect(ing.name).toBe('Brezeln');
+  });
+
+  it('1 kleine Zwiebel(n) → amount 1, name contains Zwiebel', () => {
+    const ing = r.ingredients[1];
+    expect(ing.amount).toBe(1);
+    expect(ing.name).toContain('Zwiebel');
+  });
+
+  it('Speck\\tgeräuchert, in Würfeln → name: Speck, remark: geräuchert, in Würfeln', () => {
+    const ing = r.ingredients[2];
+    expect(ing.amount).toBe(100);
+    expect(ing.unit).toBe('g');
+    expect(ing.name).toBe('Speck');
+    expect(ing.remark).toBe('geräuchert, in Würfeln');
+  });
+
+  it('Petersilie\\tgehackt → name: Petersilie, remark: gehackt', () => {
+    const ing = r.ingredients[4];
+    expect(ing.name).toBe('Petersilie');
+    expect(ing.remark).toBe('gehackt');
+  });
+
+  it('Ei(er) → Eier, amount 3', () => {
+    const eier = r.ingredients.find(i => i.name === 'Eier');
+    expect(eier?.amount).toBe(3);
+  });
+
+  it('Salz und Pfeffer is a free-form ingredient, not a section header', () => {
+    const salzPfeffer = r.ingredients.find(i => i.name === 'Salz und Pfeffer');
+    expect(salzPfeffer).toBeDefined();
+    expect(salzPfeffer?.amount).toBe(0);
+  });
+
+  it('Semmel(n) → Semmeln, amount 2', () => {
+    const ing = r.ingredients.find(i => i.name === 'Semmeln');
+    expect(ing?.amount).toBe(2);
+  });
+
+  it('procedure has exactly 6 steps (one per numbered block)', () => {
+    expect(r.procedure).toHaveLength(6);
+  });
+
+  it('step 3 is not split at "evt." — stays one step', () => {
+    const step3 = r.procedure[2];
+    expect(step3).toContain('evt.');
+    expect(step3).toContain('Salz und Pfeffer würzen');
+    expect(step3).toContain('nicht kneten');
+  });
+
+  it('procedure does not contain bare step numbers', () => {
+    r.procedure.forEach(step => {
+      expect(step).not.toMatch(/^\d+$/);
+    });
+  });
+
+  it('step 1 is about Brezen und Semmeln', () => {
+    expect(r.procedure[0]).toContain('Brezen und Semmeln');
+  });
+});
