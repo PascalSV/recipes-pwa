@@ -91,6 +91,15 @@ const WEIGHT_CLARIFICATION = /^\([\d,.]+\s*(?:g|kg|ml|l)\b/i;
 export function extractRemark(nameRaw: string): { name: string; remark?: string } {
   const trimmed = nameRaw.trim();
 
+  // German plural markers: Tomate(n) → Tomaten, Avocado(s)reife → Avocados, remark: reife
+  // Must check before generic paren match so "(n)" isn't treated as a remark
+  const pluralMatch = trimmed.match(/^(.+?)\((n|en|s|e|nen|er|es)\)(,?\s*(.+))?$/);
+  if (pluralMatch) {
+    const name = pluralMatch[1].trim() + pluralMatch[2];
+    const remark = pluralMatch[4]?.trim();
+    return remark ? { name, remark } : { name };
+  }
+
   // Trailing parenthetical: "Knoblauch (gepresst)"
   const parenMatch = trimmed.match(/^(.*?)\s*\(([^)]+)\)\s*$/);
   if (parenMatch) {
@@ -162,6 +171,8 @@ export function parseIngredientLine(line: string): Ingredient | null {
 // ---- Cooking time extraction ----
 
 const TIME_LINE = /zeit[^:]*:/i;
+// Standalone duration like "10 Min." or "1 Std. 30 Min." on its own line (Chefkoch orphan format)
+const STANDALONE_DURATION = /^\d[\d.,]*\s*(?:Stunden?|Std\.?)(?:\s+\d+\s*(?:Minuten?|Min\.?))?\s*$|^\d+\s*(?:Minuten?|Min\.?)\s*$/i;
 
 function parseDuration(text: string): number {
   let minutes = 0;
@@ -177,14 +188,14 @@ function parseDuration(text: string): number {
 }
 
 export function extractCookingTime(line: string): number | undefined {
-  if (!TIME_LINE.test(line)) return undefined;
+  if (!TIME_LINE.test(line) && !STANDALONE_DURATION.test(line.trim())) return undefined;
   const t = parseDuration(line);
   return t > 0 ? t : undefined;
 }
 
 // ---- Portions extraction ----
 
-const PORTIONS_LINE = /^(?:(?:für|for)\s+)?(\d+)\s*(?:Portionen?|Persons?|Servings?)\b/i;
+const PORTIONS_LINE = /^(?:(?:für|for)\s+)?(\d+)\s*(?:Portion(?:en)?|Persons?|Servings?)\b/i;
 
 export function extractPortions(line: string): number | undefined {
   const m = line.match(PORTIONS_LINE);
@@ -193,7 +204,7 @@ export function extractPortions(line: string): number | undefined {
 
 // ---- Noise filter ----
 
-const NOISE = /^(https?:\/\/|www\.|@|#|Portionen|Portions|Zutaten|Ingredients|Zubereitung|Preparation|Anleitung|Rezept|Recipe|Drucken|Print|Teilen|Share|Bewerten|Rate|Kommentar|Comment|Autor:|Author:|Quelle:|Source:|Foto:|Photo:|Bild:|Schwierigkeitsgrad)/i;
+const NOISE = /^(https?:\/\/|www\.|@|#|Portionen|Portions|Zutaten|Ingredients|Zubereitung|Preparation|Anleitung|Rezept|Recipe|Drucken|Print|Teilen|Share|Bewerten|Rate|Kommentar|Comment|Autor:|Author:|Quelle:|Source:|Foto:|Photo:|Bild:|Schwierigkeitsgrad|Bring!|Hinweis\b|Tipp\b)/i;
 const TOO_SHORT = /^.{0,2}$/;
 
 export function isNoise(line: string): boolean {
@@ -281,9 +292,11 @@ function parseWithSections(rawLines: string[]): ParseResult {
       if (!recipeName && !isNoise(line)) { recipeName = line; }
       // All other header lines ignored (subtitles, difficulty, etc.)
     } else if (section === 'ingredients') {
-      // Keep all non-empty lines; noise like URLs still filtered
-      if (!/^(https?:\/\/|www\.|@|#)/.test(line)) ingredientLines.push(line);
+      // Filter URLs, social tags, and known UI noise strings (Bring!, etc.)
+      // Note: do NOT use isNoise() here — it rejects 1-3 char strings like bare amounts "2", "1 EL"
+      if (!/^(https?:\/\/|www\.|@|#)/.test(line) && !NOISE.test(line)) ingredientLines.push(line);
     } else if (section === 'procedure') {
+      if (/^(?:Tipp\b|Hinweis\b)/i.test(line)) break; // stop at tips/notes
       if (isProcedureLine(line)) procedureLines.push(line);
     }
   }

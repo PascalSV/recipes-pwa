@@ -76,7 +76,7 @@ img,svg{display:block}
 .list-item{display:flex;align-items:center;padding:15px 16px;gap:12px;border-bottom:1px solid var(--nav-border);position:relative}
 .list-item:last-child{border-bottom:none}
 a.list-item:active{background:rgba(42,157,110,.12)}
-.list-item-text{flex:1;font-size:17px;font-weight:500;color:var(--text);line-height:1.3}
+.list-item-text{flex:1;font-size:17px;font-weight:500;color:var(--text);line-height:1.3;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .list-item-sub{font-size:13px;color:var(--text-2);margin-top:2px}
 .list-chevron{color:var(--text-3);flex-shrink:0}
 .list-chevron svg{width:14px;height:14px}

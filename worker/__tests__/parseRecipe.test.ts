@@ -702,3 +702,127 @@ Alles kochen.`);
     expect(flat.ingredientSections).toBeUndefined();
   });
 });
+
+// ---- 1a Guacamole-Dip (Chefkoch.de format) ----
+
+describe('1a Guacamole-Dip', () => {
+  const GUACAMOLE = `1a Guacamole-Dip
+Herrlich frischer Avocado - Dip für viele Gelegenheiten
+Nährwerte pro Portion
+377 kcal
+Energie
+7.07 g
+Eiweiß
+29.95 g
+Fett
+18.26 g
+Kohlenhydrate
+Zutaten
+Für 1 Portion
+2
+\t
+Avocado(s)reife
+2
+\t
+Tomate(n)
+0.5
+\t
+Zitrone(n), Saft davon
+2
+\t
+Knoblauchzehe(n)
+1 EL
+\t
+Naturjoghurt
+\t
+Salz und Pfeffer, schwarzer
+Bring! Logo Auf die Einkaufsliste setzen
+Zubereitung
+
+10 Min.
+Gesamtzeit
+
+10 Min.
+Arbeitszeit
+1
+
+Die Avocados halbieren, den Kern entfernen. Mit einem Löffel das Fruchtfleisch herauslösen und mit einer Gabel zu feinem Mus zerdrücken. Die Tomaten sehr fein würfeln und den Knoblauch durchpressen oder sehr fein hacken. Tomaten, Zitronensaft, Knoblauch und Joghurt zum Avocadomus geben und alles miteinander verrühren. Mit Salz und Pfeffer abschmecken.
+
+Schmeckt gut zu Kartoffelecken, auf Tortillas und zu allem, was man dippen kann.
+
+Tipp: Wer mag, kann die Tomatenkerne entfernen, so wie es im Video gezeigt wird.
+
+Hinweis vom Chefkoch-Team: Die Mengenangabe bezieht sich auf 1 Dip.`;
+
+  const r = parseRecipeText(GUACAMOLE);
+
+  it('extracts recipe name', () => {
+    expect(r.name).toBe('1a Guacamole-Dip');
+  });
+
+  it('extracts cookingTime 10 from standalone "10 Min." line', () => {
+    expect(r.cookingTime).toBe(10);
+  });
+
+  it('extracts defaultPortions 1 from "Für 1 Portion"', () => {
+    expect(r.defaultPortions).toBe(1);
+  });
+
+  it('"Für 1 Portion" is not a section header — no ingredientSections', () => {
+    expect(r.ingredientSections).toBeUndefined();
+  });
+
+  it('has 6 ingredients', () => {
+    expect(r.ingredients).toHaveLength(6);
+  });
+
+  it('Avocado(s)reife → name: Avocados, remark: reife', () => {
+    const avocado = r.ingredients[0];
+    expect(avocado.amount).toBe(2);
+    expect(avocado.name).toBe('Avocados');
+    expect(avocado.remark).toBe('reife');
+  });
+
+  it('Tomate(n) → name: Tomaten, no remark', () => {
+    const tomaten = r.ingredients[1];
+    expect(tomaten.amount).toBe(2);
+    expect(tomaten.name).toBe('Tomaten');
+    expect(tomaten.remark).toBeUndefined();
+  });
+
+  it('Zitrone(n), Saft davon → name: Zitronen, remark: Saft davon', () => {
+    const zitrone = r.ingredients[2];
+    expect(zitrone.amount).toBe(0.5);
+    expect(zitrone.name).toBe('Zitronen');
+    expect(zitrone.remark).toBe('Saft davon');
+  });
+
+  it('Knoblauchzehe(n) → name: Knoblauchzehen', () => {
+    const knobi = r.ingredients[3];
+    expect(knobi.amount).toBe(2);
+    expect(knobi.name).toBe('Knoblauchzehen');
+  });
+
+  it('1 EL Naturjoghurt → unit: tbsp', () => {
+    const joghurt = r.ingredients[4];
+    expect(joghurt.amount).toBe(1);
+    expect(joghurt.unit).toBe('tbsp');
+    expect(joghurt.name).toBe('Naturjoghurt');
+  });
+
+  it('"Bring! Logo Auf die Einkaufsliste setzen" is filtered out', () => {
+    const names = r.ingredients.map((i) => i.name);
+    expect(names.every((n) => !n.startsWith('Bring!'))).toBe(true);
+  });
+
+  it('procedure does not contain Tipp or Hinweis content', () => {
+    const allText = r.procedure.join(' ');
+    expect(allText).not.toContain('Tipp');
+    expect(allText).not.toContain('Hinweis');
+  });
+
+  it('procedure contains the main cooking step', () => {
+    const allText = r.procedure.join(' ');
+    expect(allText).toContain('Avocados halbieren');
+  });
+});

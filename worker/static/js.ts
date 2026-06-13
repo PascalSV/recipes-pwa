@@ -5,8 +5,8 @@ export const JS = `
 // ---- Language ----
 var _lang = document.body.dataset.lang || 'de';
 var _T = {
-  de: { amount:'Menge', ingredient:'Zutat', describe_step:'Schritt beschreiben…', offline:'Offline gespeichert – wird synchronisiert', copied:'In Zwischenablage kopiert', share_fail:'Teilen fehlgeschlagen', portions:'Portionen', portion:'Portion', save:'Speichern', extract:'Extrahieren', add_ingredient:'Zutat hinzufügen' },
-  en: { amount:'Amount', ingredient:'Ingredient', describe_step:'Describe step…', offline:'Saved offline – will sync', copied:'Copied to clipboard', share_fail:'Sharing failed', portions:'Portions', portion:'Portion', save:'Save', extract:'Extract', add_ingredient:'Add ingredient' }
+  de: { amount:'Menge', ingredient:'Zutat', describe_step:'Schritt beschreiben…', offline:'Offline gespeichert – wird synchronisiert', copied:'In Zwischenablage kopiert', share_fail:'Teilen fehlgeschlagen', portions:'Portionen', portion:'Portion', save:'Speichern', extract:'Extrahieren', add_ingredient:'Zutat hinzufügen', share:'Teilen', copy_link:'Link kopieren', print:'Drucken', cancel:'Abbrechen' },
+  en: { amount:'Amount', ingredient:'Ingredient', describe_step:'Describe step…', offline:'Saved offline – will sync', copied:'Copied to clipboard', share_fail:'Sharing failed', portions:'Portions', portion:'Portion', save:'Save', extract:'Extract', add_ingredient:'Add ingredient', share:'Share', copy_link:'Copy link', print:'Print', cancel:'Cancel' }
 };
 function jst(key) { return (_T[_lang] || _T.de)[key] || key; }
 
@@ -203,11 +203,48 @@ function initDetail() {
   };
 
   window.shareRecipe = function () {
+    var title = document.title;
+    var url = window.location.href;
     if (navigator.share) {
-      navigator.share({ title: document.title, url: window.location.href }).catch(function () {});
-    } else {
-      window.print();
+      navigator.share({ title: title, url: url }).catch(function () {});
+      return;
     }
+    // Fallback: small action sheet with copy-link and print
+    var overlay = document.createElement('div');
+    overlay.className = 'dialog-overlay';
+    var sheet = document.createElement('div');
+    sheet.className = 'dialog-sheet';
+    function closeShare() { overlay.remove(); sheet.remove(); }
+    overlay.addEventListener('click', function (e) { if (e.target === overlay) closeShare(); });
+    var ti = document.createElement('div');
+    ti.className = 'dialog-title';
+    ti.textContent = jst('share');
+    var copyBtn = document.createElement('button');
+    copyBtn.className = 'dialog-action btn btn-primary';
+    copyBtn.textContent = jst('copy_link');
+    copyBtn.onclick = function () {
+      navigator.clipboard.writeText(url).then(function () {
+        closeShare();
+        toast(jst('copied'));
+      }).catch(function () {
+        closeShare();
+        toast(jst('share_fail'));
+      });
+    };
+    var printBtn = document.createElement('button');
+    printBtn.className = 'dialog-action btn btn-primary';
+    printBtn.textContent = jst('print');
+    printBtn.onclick = function () { closeShare(); window.print(); };
+    var cancelBtn = document.createElement('button');
+    cancelBtn.className = 'dialog-action dialog-action-cancel';
+    cancelBtn.textContent = jst('cancel');
+    cancelBtn.onclick = closeShare;
+    sheet.appendChild(ti);
+    sheet.appendChild(copyBtn);
+    sheet.appendChild(printBtn);
+    sheet.appendChild(cancelBtn);
+    document.body.appendChild(overlay);
+    document.body.appendChild(sheet);
   };
 }
 
