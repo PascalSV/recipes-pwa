@@ -211,7 +211,7 @@ a.list-item:active{background:rgba(42,157,110,.12)}
 .empty{text-align:center;padding:52px 24px;color:var(--text-3)}
 .empty svg{width:48px;height:48px;margin:0 auto 12px;opacity:.4}
 .hidden{display:none!important}
-.mt-8{margin-top:8px}.mt-16{margin-top:16px}.mt-20{margin-top:20px}.fw-600{font-weight:600}
+.mt-8{margin-top:8px}.mt-16{margin-top:16px}.mt-20{margin-top:20px}.mb-16{margin-bottom:16px}.fw-600{font-weight:600}
 
 /* ── Toast ── */
 .toast{position:fixed;bottom:calc(24px + var(--safe-b));left:50%;transform:translateX(-50%);background:rgba(28,28,30,.9);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);color:#fff;padding:11px 22px;border-radius:100px;font-size:15px;font-weight:500;z-index:999;pointer-events:none;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.2);animation:fadein .2s ease}
