@@ -18,6 +18,7 @@ const UNIT_MAP: Record<string, Unit> = {
   msp: 'piece', messerspitze: 'piece', messerspitzen: 'piece',
   pck: 'pck', päckchen: 'pck', packchen: 'pck', pkg: 'pck', pkt: 'pck',
   bund: 'bunch', bünde: 'bunch', bunch: 'bunch', bunches: 'bunch',
+  dose: 'can', dosen: 'can', can: 'can', cans: 'can', tin: 'can', tins: 'can',
 };
 
 export function parseUnit(raw: string): Unit | undefined {
