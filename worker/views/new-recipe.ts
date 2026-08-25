@@ -44,7 +44,7 @@ function recipePage({ lang, recipe }: { lang: Lang; recipe?: Recipe }): string {
     <!-- Phase 1: paste area (new only) -->
     <div id="paste-phase"${isEdit ? ' class="hidden"' : ''}>
       <div class="form-section">
-        <button id="skip-parse-btn" type="button" class="btn btn-secondary btn-block mt-16"
+        <button id="skip-parse-btn" type="button" class="btn btn-primary btn-block mt-16"
           onclick="handleSkipParse()">
           ${t('new.skip_parse', lang)}
         </button>
