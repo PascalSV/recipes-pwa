@@ -288,6 +288,13 @@ function initNew() {
     populateForm(parsedData);
   };
 
+  window.handleSkipParse = function () {
+    var paste = document.getElementById('paste-phase');
+    var form  = document.getElementById('form-phase');
+    if (paste) paste.classList.add('hidden');
+    if (form)  form.classList.remove('hidden');
+  };
+
   window.handleSave = async function () {
     var name = (document.getElementById('recipe-name') || {}).value || '';
     name = name.trim();

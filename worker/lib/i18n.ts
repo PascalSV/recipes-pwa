@@ -32,6 +32,7 @@ const T: Record<string, Record<Lang, string>> = {
   'new.paste_ph':           { de: 'Rezepttext hier einfügen – Zutaten und Schritte werden automatisch erkannt…', en: 'Paste recipe text here – ingredients and steps will be detected automatically…' },
   'new.parse_error':        { de: 'Rezept konnte nicht extrahiert werden.', en: 'Could not extract recipe.' },
   'new.extract':            { de: 'Extrahieren',                    en: 'Extract' },
+  'new.skip_parse':         { de: 'Direkt eingeben',               en: 'Skip – enter directly' },
   'new.name':               { de: 'Rezeptname',                     en: 'Recipe name' },
   'new.category':           { de: 'Kategorie',                      en: 'Category' },
   'new.portions':           { de: 'Portionen',                      en: 'Portions' },

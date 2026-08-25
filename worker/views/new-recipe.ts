@@ -24,7 +24,7 @@ function recipePage({ lang, recipe }: { lang: Lang; recipe?: Recipe }): string {
   const page  = isEdit ? 'edit' : 'new';
 
   const navLeft   = isEdit
-    ? `<button type="button" class="nav-btn" onclick="handleCancel()">${t('cancel', lang)}</button>`
+    ? `<a href="/recipe/${recipe!.id}" class="nav-btn">${BACK} ${t('back', lang)}</a> <button type="button" class="nav-btn" onclick="handleCancel()">${t('cancel', lang)}</button>`
     : `<a href="/" class="nav-btn">${BACK} ${t('back', lang)}</a>`;
   const navRight  = isEdit
     ? `<button type="button" class="nav-btn nav-btn-danger" onclick="handleDeleteRecipe()">${TRASH_ICON}</button>`
@@ -44,6 +44,10 @@ function recipePage({ lang, recipe }: { lang: Lang; recipe?: Recipe }): string {
     <!-- Phase 1: paste area (new only) -->
     <div id="paste-phase"${isEdit ? ' class="hidden"' : ''}>
       <div class="form-section">
+        <button id="skip-parse-btn" type="button" class="btn btn-secondary btn-block mt-16"
+          onclick="handleSkipParse()">
+          ${t('new.skip_parse', lang)}
+        </button>
         <div class="field">
           <label class="field-label" for="paste-input">${t('new.paste_label', lang)}</label>
           <textarea id="paste-input" class="textarea" rows="10"
