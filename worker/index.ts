@@ -5,7 +5,6 @@ import { getIndex, getRecipe } from './lib/r2.ts';
 import { getLangFromCookie, type Lang } from './lib/i18n.ts';
 import { authRoutes } from './routes/auth.ts';
 import { recipeRoutes } from './routes/recipes.ts';
-import { parseRoutes } from './routes/parse.ts';
 import { CSS } from './static/css.ts';
 import {
   FONT_D_DIN,
@@ -80,7 +79,6 @@ app.get('/icon.png', () => {
 
 app.route('/api/auth', authRoutes);
 app.route('/api/recipes', recipeRoutes);
-app.route('/api/recipes/parse', parseRoutes);
 
 // ---- Page routes ----
 

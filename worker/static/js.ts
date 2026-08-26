@@ -5,8 +5,8 @@ export const JS = `
 // ---- Language ----
 var _lang = document.body.dataset.lang || 'de';
 var _T = {
-  de: { amount:'Menge', ingredient:'Zutat', describe_step:'Schritt beschreiben…', offline:'Offline gespeichert – wird synchronisiert', copied:'In Zwischenablage kopiert', share_fail:'Teilen fehlgeschlagen', portions:'Portionen', portion:'Portion', save:'Speichern', extract:'Extrahieren', add_ingredient:'Zutat hinzufügen', share:'Teilen', copy_link:'Link kopieren', print:'Drucken', cancel:'Abbrechen' },
-  en: { amount:'Amount', ingredient:'Ingredient', describe_step:'Describe step…', offline:'Saved offline – will sync', copied:'Copied to clipboard', share_fail:'Sharing failed', portions:'Portions', portion:'Portion', save:'Save', extract:'Extract', add_ingredient:'Add ingredient', share:'Share', copy_link:'Copy link', print:'Print', cancel:'Cancel' }
+  de: { amount:'Menge', ingredient:'Zutat', describe_step:'Schritt beschreiben…', offline:'Offline gespeichert – wird synchronisiert', copied:'In Zwischenablage kopiert', share_fail:'Teilen fehlgeschlagen', portions:'Portionen', portion:'Portion', save:'Speichern', extract:'Extrahieren', add_ingredient:'Zutat hinzufügen', share:'Teilen', copy_link:'Link kopieren', print:'Drucken', cancel:'Abbrechen', shortcut_missing:'Kurzbefehl "Rezept extrahieren" wurde nicht gefunden. Bitte in der Kurzbefehle-App einrichten.', llm_bad_json:'Private LLM hat kein gültiges JSON geliefert. Bitte erneut versuchen.' },
+  en: { amount:'Amount', ingredient:'Ingredient', describe_step:'Describe step…', offline:'Saved offline – will sync', copied:'Copied to clipboard', share_fail:'Sharing failed', portions:'Portions', portion:'Portion', save:'Save', extract:'Extract', add_ingredient:'Add ingredient', share:'Share', copy_link:'Copy link', print:'Print', cancel:'Cancel', shortcut_missing:'Shortcut "Rezept extrahieren" was not found. Please set it up in the Shortcuts app.', llm_bad_json:'Private LLM did not return valid JSON. Please try again.' }
 };
 function jst(key) { return (_T[_lang] || _T.de)[key] || key; }
 
@@ -251,6 +251,9 @@ function initDetail() {
 // ---- New Recipe ----
 var parsedData = null;
 
+// Must exactly match the name of the Shortcut set up in the Shortcuts app.
+var LLM_SHORTCUT_NAME = 'Rezept extrahieren';
+
 function initNew() {
   var textarea = document.getElementById('paste-input');
   var parseBtn = document.getElementById('parse-btn');
@@ -260,32 +263,47 @@ function initNew() {
     parseBtn.disabled = !this.value.trim();
   });
 
-  window.handleParse = async function () {
+  // Private LLM (via Shortcuts) redirects back here with the extracted recipe
+  // JSON in the URL once it's done — pick it up and skip straight to the form.
+  var llmResult = new URLSearchParams(location.search).get('llmResult');
+  if (llmResult) {
+    history.replaceState(null, '', location.pathname);
+    var errEl0 = document.getElementById('parse-error');
+    try {
+      parsedData = JSON.parse(llmResult);
+      var paste0 = document.getElementById('paste-phase');
+      var form0  = document.getElementById('form-phase');
+      if (paste0) paste0.classList.add('hidden');
+      if (form0)  form0.classList.remove('hidden');
+      populateForm(parsedData);
+    } catch (e) {
+      if (errEl0) { errEl0.textContent = jst('llm_bad_json'); errEl0.classList.remove('hidden'); }
+    }
+  }
+
+  window.handleParse = function () {
     var text = textarea.value.trim();
     if (!text) return;
-    parseBtn.disabled = true;
-    parseBtn.innerHTML = '<span class="spinner"></span>';
     var errEl = document.getElementById('parse-error');
     if (errEl) errEl.classList.add('hidden');
 
-    var res = await api('/api/recipes/parse', {
-      method: 'POST',
-      body: JSON.stringify({ text: text })
-    });
+    var url = 'shortcuts://run-shortcut?name=' + encodeURIComponent(LLM_SHORTCUT_NAME) +
+      '&input=text&text=' + encodeURIComponent(text);
 
-    if (!res || !res.ok) {
-      parseBtn.disabled = false;
-      parseBtn.textContent = jst('extract') || 'Extrahieren';
-      if (errEl) errEl.classList.remove('hidden');
-      return;
-    }
+    // Safari gives no reliable success/failure callback for a custom URL scheme,
+    // so infer failure from the page never losing visibility (Shortcuts didn't open).
+    var launched = false;
+    var markLaunched = function () { launched = true; };
+    document.addEventListener('visibilitychange', markLaunched);
+    window.addEventListener('pagehide', markLaunched);
 
-    parsedData = await res.json();
-    var paste = document.getElementById('paste-phase');
-    var form  = document.getElementById('form-phase');
-    if (paste) paste.classList.add('hidden');
-    if (form)  form.classList.remove('hidden');
-    populateForm(parsedData);
+    window.location.href = url;
+
+    setTimeout(function () {
+      document.removeEventListener('visibilitychange', markLaunched);
+      window.removeEventListener('pagehide', markLaunched);
+      if (!launched && errEl) { errEl.textContent = jst('shortcut_missing'); errEl.classList.remove('hidden'); }
+    }, 1500);
   };
 
   window.handleSkipParse = function () {
