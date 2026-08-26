@@ -306,6 +306,13 @@ function initNew() {
     history.replaceState(null, '', location.pathname);
     var clipBtn = document.getElementById('paste-clipboard-btn');
     if (clipBtn) clipBtn.classList.remove('hidden');
+    // Hide the normal paste UI — this screen should show only the one relevant button.
+    var skipBtnEl = document.getElementById('skip-parse-btn');
+    var fieldsEl = document.getElementById('paste-normal-fields');
+    var parseBtnEl = document.getElementById('parse-btn');
+    if (skipBtnEl) skipBtnEl.classList.add('hidden');
+    if (fieldsEl) fieldsEl.classList.add('hidden');
+    if (parseBtnEl) parseBtnEl.classList.add('hidden');
   }
 
   window.handlePasteFromClipboard = async function () {

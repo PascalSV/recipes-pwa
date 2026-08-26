@@ -52,7 +52,7 @@ function recipePage({ lang, recipe }: { lang: Lang; recipe?: Recipe }): string {
           onclick="handleSkipParse()">
           ${t('new.skip_parse', lang)}
         </button>
-        <div class="field">
+        <div id="paste-normal-fields" class="field">
           <label class="field-label" for="paste-input">${t('new.paste_label', lang)}</label>
           <textarea id="paste-input" class="textarea" rows="10"
             placeholder="${esc(t('new.paste_ph', lang))}"
