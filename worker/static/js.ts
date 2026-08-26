@@ -105,6 +105,12 @@ if (document.body.dataset.page !== 'login' && !localStorage.getItem('token')) {
   }).catch(function(){});
 }
 
+// Declared here (not near createIngRow, where they're used) because the page
+// router below can call initNew() -> populateForm() synchronously (llmResult
+// in the URL), which runs before the script would reach a later var declaration.
+var UNITS = ['', 'g', 'kg', 'ml', 'l', 'tbsp', 'tsp', 'cup', 'piece', 'pck', 'prise', 'bunch', 'can'];
+var UNIT_LABELS = { '': '—', g: 'g', kg: 'kg', ml: 'ml', l: 'l', tbsp: 'EL', tsp: 'TL', cup: 'Tasse', piece: 'Stk', pck: 'Päck.', prise: 'Prise', bunch: 'Bd.', can: 'Dose' };
+
 // ---- Page router ----
 const page = document.body.dataset.page;
 if (page === 'list')     initList();
@@ -277,7 +283,12 @@ function initNew() {
       if (form0)  form0.classList.remove('hidden');
       populateForm(parsedData);
     } catch (e) {
-      if (errEl0) { errEl0.textContent = jst('llm_bad_json'); errEl0.classList.remove('hidden'); }
+      console.error('llmResult parse failed:', e, llmResult);
+      if (errEl0) {
+        errEl0.textContent = jst('llm_bad_json') + ' — ' + (e && e.message ? e.message : '') +
+          ' | ' + llmResult.slice(0, 400);
+        errEl0.classList.remove('hidden');
+      }
     }
   }
 
@@ -507,9 +518,6 @@ function populateForm(recipe) {
     });
   }
 }
-
-var UNITS = ['', 'g', 'kg', 'ml', 'l', 'tbsp', 'tsp', 'cup', 'piece', 'pck', 'prise', 'bunch', 'can'];
-var UNIT_LABELS = { '': '—', g: 'g', kg: 'kg', ml: 'ml', l: 'l', tbsp: 'EL', tsp: 'TL', cup: 'Tasse', piece: 'Stk', pck: 'Päck.', prise: 'Prise', bunch: 'Bd.', can: 'Dose' };
 
 // ---- Swipe-to-delete for ingredient rows ----
 var _openSwipe = null;
