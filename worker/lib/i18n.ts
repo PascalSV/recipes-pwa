@@ -34,6 +34,7 @@ const T: Record<string, Record<Lang, string>> = {
   'new.extract':            { de: 'Extrahieren',                    en: 'Extract' },
   'new.skip_parse':         { de: 'Direkt eingeben',               en: 'Skip – enter directly' },
   'new.paste_clipboard':    { de: 'Aus Zwischenablage einfügen',   en: 'Paste from clipboard' },
+  'new.processing':         { de: 'Private LLM verarbeitet dein Rezept …', en: 'Private LLM is processing your recipe …' },
   'new.name':               { de: 'Rezeptname',                     en: 'Recipe name' },
   'new.category':           { de: 'Kategorie',                      en: 'Category' },
   'new.portions':           { de: 'Portionen',                      en: 'Portions' },

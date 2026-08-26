@@ -333,6 +333,11 @@ function initNew() {
     var errEl = document.getElementById('parse-error');
     if (errEl) errEl.classList.add('hidden');
 
+    var pasteEl = document.getElementById('paste-phase');
+    var processingEl = document.getElementById('processing-phase');
+    if (pasteEl) pasteEl.classList.add('hidden');
+    if (processingEl) processingEl.classList.remove('hidden');
+
     var url = 'shortcuts://run-shortcut?name=' + encodeURIComponent(LLM_SHORTCUT_NAME) +
       '&input=text&text=' + encodeURIComponent(text);
 
@@ -348,7 +353,11 @@ function initNew() {
     setTimeout(function () {
       document.removeEventListener('visibilitychange', markLaunched);
       window.removeEventListener('pagehide', markLaunched);
-      if (!launched && errEl) { errEl.textContent = jst('shortcut_missing'); errEl.classList.remove('hidden'); }
+      if (!launched) {
+        if (processingEl) processingEl.classList.add('hidden');
+        if (pasteEl) pasteEl.classList.remove('hidden');
+        if (errEl) { errEl.textContent = jst('shortcut_missing'); errEl.classList.remove('hidden'); }
+      }
     }, 1500);
   };
 

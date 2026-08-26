@@ -41,6 +41,12 @@ function recipePage({ lang, recipe }: { lang: Lang; recipe?: Recipe }): string {
   const content = `
     ${recipeScript}
 
+    <!-- Phase 0: waiting for Private LLM (shown after tapping "Extrahieren") -->
+    <div id="processing-phase" class="hidden" style="text-align:center;padding:80px 20px">
+      <span class="spinner spinner-green" style="width:40px;height:40px;border-width:4px"></span>
+      <p style="margin-top:20px;color:var(--text-2)">${t('new.processing', lang)}</p>
+    </div>
+
     <!-- Phase 1: paste area (new only) -->
     <div id="paste-phase"${isEdit ? ' class="hidden"' : ''}>
       <div class="form-section">
