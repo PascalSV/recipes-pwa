@@ -5,24 +5,12 @@ workers_dev = true
 
 [[r2_buckets]]
 binding = "RECIPES_BUCKET"
-bucket_name = "pascals-recipes-dev"
+bucket_name = "pascals-recipes"
 preview_bucket_name = "pascals-recipes"
 
 [vars]
 ALLOWED_USERS = "Claudia,Pascal"
 
 [observability.logs]
-enabled = true
-invocation_logs = true
-
-[env.remote]
-r2_buckets = [
-  { binding = "RECIPES_BUCKET", bucket_name = "pascals-recipes", preview_bucket_name = "pascals-recipes" },
-]
-
-[env.remote.vars]
-ALLOWED_USERS = "Claudia,Pascal"
-
-[env.remote.observability.logs]
 enabled = true
 invocation_logs = true
