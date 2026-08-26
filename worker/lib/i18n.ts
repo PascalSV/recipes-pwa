@@ -33,6 +33,7 @@ const T: Record<string, Record<Lang, string>> = {
   'new.parse_error':        { de: 'Rezept konnte nicht extrahiert werden.', en: 'Could not extract recipe.' },
   'new.extract':            { de: 'Extrahieren',                    en: 'Extract' },
   'new.skip_parse':         { de: 'Direkt eingeben',               en: 'Skip – enter directly' },
+  'new.paste_clipboard':    { de: 'Aus Zwischenablage einfügen',   en: 'Paste from clipboard' },
   'new.name':               { de: 'Rezeptname',                     en: 'Recipe name' },
   'new.category':           { de: 'Kategorie',                      en: 'Category' },
   'new.portions':           { de: 'Portionen',                      en: 'Portions' },

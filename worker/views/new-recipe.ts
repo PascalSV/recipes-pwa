@@ -44,6 +44,10 @@ function recipePage({ lang, recipe }: { lang: Lang; recipe?: Recipe }): string {
     <!-- Phase 1: paste area (new only) -->
     <div id="paste-phase"${isEdit ? ' class="hidden"' : ''}>
       <div class="form-section">
+        <button id="paste-clipboard-btn" type="button" class="btn btn-primary btn-block mt-16 mb-16 hidden"
+          onclick="handlePasteFromClipboard()">
+          ${t('new.paste_clipboard', lang)}
+        </button>
         <button id="skip-parse-btn" type="button" class="btn btn-primary btn-block mt-16 mb-16"
           onclick="handleSkipParse()">
           ${t('new.skip_parse', lang)}

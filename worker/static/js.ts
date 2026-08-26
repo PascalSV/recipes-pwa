@@ -5,8 +5,8 @@ export const JS = `
 // ---- Language ----
 var _lang = document.body.dataset.lang || 'de';
 var _T = {
-  de: { amount:'Menge', ingredient:'Zutat', describe_step:'Schritt beschreiben…', offline:'Offline gespeichert – wird synchronisiert', copied:'In Zwischenablage kopiert', share_fail:'Teilen fehlgeschlagen', portions:'Portionen', portion:'Portion', save:'Speichern', extract:'Extrahieren', add_ingredient:'Zutat hinzufügen', share:'Teilen', copy_link:'Link kopieren', print:'Drucken', cancel:'Abbrechen', shortcut_missing:'Kurzbefehl "Rezept extrahieren" wurde nicht gefunden. Bitte in der Kurzbefehle-App einrichten.', llm_bad_json:'Private LLM hat kein gültiges JSON geliefert. Bitte erneut versuchen.' },
-  en: { amount:'Amount', ingredient:'Ingredient', describe_step:'Describe step…', offline:'Saved offline – will sync', copied:'Copied to clipboard', share_fail:'Sharing failed', portions:'Portions', portion:'Portion', save:'Save', extract:'Extract', add_ingredient:'Add ingredient', share:'Share', copy_link:'Copy link', print:'Print', cancel:'Cancel', shortcut_missing:'Shortcut "Rezept extrahieren" was not found. Please set it up in the Shortcuts app.', llm_bad_json:'Private LLM did not return valid JSON. Please try again.' }
+  de: { amount:'Menge', ingredient:'Zutat', describe_step:'Schritt beschreiben…', offline:'Offline gespeichert – wird synchronisiert', copied:'In Zwischenablage kopiert', share_fail:'Teilen fehlgeschlagen', portions:'Portionen', portion:'Portion', save:'Speichern', extract:'Extrahieren', add_ingredient:'Zutat hinzufügen', share:'Teilen', copy_link:'Link kopieren', print:'Drucken', cancel:'Abbrechen', shortcut_missing:'Kurzbefehl "Rezept extrahieren" wurde nicht gefunden. Bitte in der Kurzbefehle-App einrichten.', llm_bad_json:'Private LLM hat kein gültiges JSON geliefert. Bitte erneut versuchen.', clipboard_fail:'Zwischenablage konnte nicht gelesen werden. Bitte Berechtigung erteilen und erneut versuchen.' },
+  en: { amount:'Amount', ingredient:'Ingredient', describe_step:'Describe step…', offline:'Saved offline – will sync', copied:'Copied to clipboard', share_fail:'Sharing failed', portions:'Portions', portion:'Portion', save:'Save', extract:'Extract', add_ingredient:'Add ingredient', share:'Share', copy_link:'Copy link', print:'Print', cancel:'Cancel', shortcut_missing:'Shortcut "Rezept extrahieren" was not found. Please set it up in the Shortcuts app.', llm_bad_json:'Private LLM did not return valid JSON. Please try again.', clipboard_fail:'Could not read the clipboard. Please grant permission and try again.' }
 };
 function jst(key) { return (_T[_lang] || _T.de)[key] || key; }
 
@@ -269,28 +269,56 @@ function initNew() {
     parseBtn.disabled = !this.value.trim();
   });
 
-  // Private LLM (via Shortcuts) redirects back here with the extracted recipe
-  // JSON in the URL once it's done — pick it up and skip straight to the form.
-  var llmResult = new URLSearchParams(location.search).get('llmResult');
-  if (llmResult) {
-    history.replaceState(null, '', location.pathname);
-    var errEl0 = document.getElementById('parse-error');
+  // Shared by both hand-off paths below: parse the extracted-recipe JSON and
+  // skip straight to the form, or show what actually came back if it's not valid JSON.
+  function applyLlmResult(rawText, errEl) {
     try {
-      parsedData = JSON.parse(llmResult);
+      parsedData = JSON.parse(rawText);
       var paste0 = document.getElementById('paste-phase');
       var form0  = document.getElementById('form-phase');
       if (paste0) paste0.classList.add('hidden');
       if (form0)  form0.classList.remove('hidden');
       populateForm(parsedData);
     } catch (e) {
-      console.error('llmResult parse failed:', e, llmResult);
-      if (errEl0) {
-        errEl0.textContent = jst('llm_bad_json') + ' — ' + (e && e.message ? e.message : '') +
-          ' | ' + llmResult.slice(0, 400);
-        errEl0.classList.remove('hidden');
+      console.error('llmResult parse failed:', e, rawText);
+      if (errEl) {
+        errEl.textContent = jst('llm_bad_json') + ' — ' + (e && e.message ? e.message : '') +
+          ' | ' + String(rawText).slice(0, 400);
+        errEl.classList.remove('hidden');
       }
     }
   }
+
+  // Private LLM (via Shortcuts) redirects back here with the extracted recipe
+  // JSON in the URL once it's done — pick it up and skip straight to the form.
+  // Only reliable for short recipes; Shortcuts' "Open URLs" silently drops the
+  // path+query for very long URLs, which is what the clipboard path below is for.
+  var llmResult = new URLSearchParams(location.search).get('llmResult');
+  if (llmResult) {
+    history.replaceState(null, '', location.pathname);
+    applyLlmResult(llmResult, document.getElementById('parse-error'));
+  }
+
+  // Same hand-off, but via the clipboard instead of a URL — the Shortcut copies
+  // the extracted JSON and opens this page with a short, fixed URL instead.
+  var fromClipboard = new URLSearchParams(location.search).get('fromClipboard');
+  if (fromClipboard) {
+    history.replaceState(null, '', location.pathname);
+    var clipBtn = document.getElementById('paste-clipboard-btn');
+    if (clipBtn) clipBtn.classList.remove('hidden');
+  }
+
+  window.handlePasteFromClipboard = async function () {
+    var errEl = document.getElementById('parse-error');
+    if (errEl) errEl.classList.add('hidden');
+    try {
+      var text = await navigator.clipboard.readText();
+      applyLlmResult(text, errEl);
+    } catch (e) {
+      console.error('clipboard read failed:', e);
+      if (errEl) { errEl.textContent = jst('clipboard_fail'); errEl.classList.remove('hidden'); }
+    }
+  };
 
   window.handleParse = function () {
     var text = textarea.value.trim();
