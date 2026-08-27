@@ -32,7 +32,7 @@ function lang(c: { req: { header: (k: string) => string | undefined } }): Lang {
 // ---- Static assets ----
 
 app.get('/styles.css', (c) =>
-  c.text(CSS, 200, { 'Content-Type': 'text/css;charset=UTF-8', 'Cache-Control': 'public,max-age=86400' })
+  c.text(CSS, 200, { 'Content-Type': 'text/css;charset=UTF-8', 'Cache-Control': 'no-store' })
 );
 
 const FONT_CACHE = 'public,max-age=31536000,immutable';
@@ -48,7 +48,7 @@ app.get('/fonts/D-DINCondensed.otf',     () => serveFont(FONT_D_DINCONDENSED));
 app.get('/fonts/D-DINCondensed-Bold.otf',() => serveFont(FONT_D_DINCONDENSED_BOLD));
 
 app.get('/app.js', (c) =>
-  c.text(JS, 200, { 'Content-Type': 'application/javascript;charset=UTF-8', 'Cache-Control': 'public,max-age=86400' })
+  c.text(JS, 200, { 'Content-Type': 'application/javascript;charset=UTF-8', 'Cache-Control': 'no-store' })
 );
 
 app.get('/sw.js', (c) =>
@@ -67,7 +67,7 @@ app.get('/manifest.json', (c) =>
     icons: [
       { src: '/icon.png', type: 'image/png', sizes: '512x512', purpose: 'any maskable' },
     ],
-  }, 200, { 'Cache-Control': 'public,max-age=86400' })
+  }, 200, { 'Cache-Control': 'no-store' })
 );
 
 app.get('/icon.png', () => {

@@ -47,25 +47,30 @@ function recipePage({ lang, recipe }: { lang: Lang; recipe?: Recipe }): string {
       <p style="margin-top:20px;color:var(--text-2)">${t('new.processing', lang)}</p>
     </div>
 
+    <!-- Phase 0b: Private LLM is done — clipboard hand-off (shown for ?fromClipboard=1 only) -->
+    <div id="clipboard-phase" class="hidden" style="text-align:center;padding:80px 20px">
+      <button id="paste-clipboard-btn" type="button" class="btn btn-primary btn-block mt-16"
+        onclick="handlePasteFromClipboard()">
+        ${t('new.paste_clipboard', lang)}
+      </button>
+    </div>
+
+    <div id="parse-error" class="alert alert-error hidden" style="margin:12px 0">
+      ${t('new.parse_error', lang)}
+    </div>
+
     <!-- Phase 1: paste area (new only) -->
     <div id="paste-phase"${isEdit ? ' class="hidden"' : ''}>
       <div class="form-section">
-        <button id="paste-clipboard-btn" type="button" class="btn btn-primary btn-block mt-16 mb-16 hidden"
-          onclick="handlePasteFromClipboard()">
-          ${t('new.paste_clipboard', lang)}
-        </button>
         <button id="skip-parse-btn" type="button" class="btn btn-primary btn-block mt-16 mb-16"
           onclick="handleSkipParse()">
           ${t('new.skip_parse', lang)}
         </button>
-        <div id="paste-normal-fields" class="field">
+        <div class="field">
           <label class="field-label" for="paste-input">${t('new.paste_label', lang)}</label>
           <textarea id="paste-input" class="textarea" rows="10"
             placeholder="${esc(t('new.paste_ph', lang))}"
             style="min-height:180px"></textarea>
-        </div>
-        <div id="parse-error" class="alert alert-error hidden" style="margin-top:12px">
-          ${t('new.parse_error', lang)}
         </div>
         <button id="parse-btn" type="button" class="btn btn-primary btn-block mt-16"
           disabled onclick="handleParse()">

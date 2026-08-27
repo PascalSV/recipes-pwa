@@ -13,6 +13,8 @@ const THEME_SCRIPT = `<script>(function(){var t=localStorage.getItem('theme')||'
 
 const MANIFEST_LINK = `<link rel="manifest" href="/manifest.json">`;
 const FAVICON_LINK = `<link rel="icon" href="/icon.png" type="image/png">`;
+// iOS ignores the manifest's icons array for "Add to Home Screen" and needs this instead.
+const APPLE_TOUCH_ICON_LINK = `<link rel="apple-touch-icon" href="/icon.png">`;
 
 const IOS_META = `
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -47,6 +49,7 @@ ${IOS_META}
 <title>${esc(opts.title)} — Pascals Rezeptesammlung</title>
 ${MANIFEST_LINK}
 ${FAVICON_LINK}
+${APPLE_TOUCH_ICON_LINK}
 <link rel="stylesheet" href="/styles.css">
 ${THEME_SCRIPT}
 </head>
@@ -117,6 +120,7 @@ ${IOS_META}
 <title>${lang === 'en' ? 'Sign in' : 'Anmelden'} — Pascals Rezeptesammlung</title>
 ${MANIFEST_LINK}
 ${FAVICON_LINK}
+${APPLE_TOUCH_ICON_LINK}
 <link rel="stylesheet" href="/styles.css">
 ${THEME_SCRIPT}
 </head>

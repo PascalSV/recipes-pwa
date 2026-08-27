@@ -275,8 +275,10 @@ function initNew() {
     try {
       parsedData = JSON.parse(rawText);
       var paste0 = document.getElementById('paste-phase');
+      var clipPhase0 = document.getElementById('clipboard-phase');
       var form0  = document.getElementById('form-phase');
       if (paste0) paste0.classList.add('hidden');
+      if (clipPhase0) clipPhase0.classList.add('hidden');
       if (form0)  form0.classList.remove('hidden');
       populateForm(parsedData);
     } catch (e) {
@@ -301,18 +303,14 @@ function initNew() {
 
   // Same hand-off, but via the clipboard instead of a URL — the Shortcut copies
   // the extracted JSON and opens this page with a short, fixed URL instead.
+  // Own dedicated screen (not just an extra button) so the state change is unmissable.
   var fromClipboard = new URLSearchParams(location.search).get('fromClipboard');
   if (fromClipboard) {
     history.replaceState(null, '', location.pathname);
-    var clipBtn = document.getElementById('paste-clipboard-btn');
-    if (clipBtn) clipBtn.classList.remove('hidden');
-    // Hide the normal paste UI — this screen should show only the one relevant button.
-    var skipBtnEl = document.getElementById('skip-parse-btn');
-    var fieldsEl = document.getElementById('paste-normal-fields');
-    var parseBtnEl = document.getElementById('parse-btn');
-    if (skipBtnEl) skipBtnEl.classList.add('hidden');
-    if (fieldsEl) fieldsEl.classList.add('hidden');
-    if (parseBtnEl) parseBtnEl.classList.add('hidden');
+    var pasteEl0 = document.getElementById('paste-phase');
+    var clipPhaseEl = document.getElementById('clipboard-phase');
+    if (pasteEl0) pasteEl0.classList.add('hidden');
+    if (clipPhaseEl) clipPhaseEl.classList.remove('hidden');
   }
 
   window.handlePasteFromClipboard = async function () {
