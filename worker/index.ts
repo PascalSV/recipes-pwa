@@ -120,7 +120,7 @@ app.get('/recipe/:id/edit', async (c) => {
 app.get('/settings', (c) => {
   const session = requirePage(c);
   if (!session) return c.redirect('/login');
-  return c.html(settingsPage(session.user, lang(c)));
+  return c.html(settingsPage(session.user, lang(c), c.env.COMMIT_SHA));
 });
 
 // ---- 404 ----

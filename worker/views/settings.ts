@@ -3,7 +3,7 @@ import { t, type Lang } from '../lib/i18n.ts';
 
 const BACK = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`;
 
-export function settingsPage(user: string, lang: Lang): string {
+export function settingsPage(user: string, lang: Lang, commitSha: string): string {
   const navLeft = `<a href="/" class="nav-btn">${BACK} ${t('back', lang)}</a>`;
 
   const content = `
@@ -51,6 +51,14 @@ export function settingsPage(user: string, lang: Lang): string {
         onclick="logout()">
         ${t('settings.sign_out', lang)}
       </button>
+    </div>
+
+    <div class="settings-group-title">${t('settings.about', lang)}</div>
+    <div class="settings-card">
+      <div class="settings-item">
+        <span class="settings-item-label">${t('settings.version', lang)}</span>
+        <span style="color:var(--text-2);font-size:15px;font-family:ui-monospace,monospace">${esc(commitSha)}</span>
+      </div>
     </div>
   `;
 

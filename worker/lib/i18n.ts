@@ -65,6 +65,8 @@ const T: Record<string, Record<Lang, string>> = {
   'settings.account':       { de: 'Konto',                          en: 'Account' },
   'settings.logged_in_as':  { de: 'Angemeldet als',                 en: 'Signed in as' },
   'settings.sign_out':      { de: 'Abmelden',                       en: 'Sign out' },
+  'settings.about':         { de: 'Über',                           en: 'About' },
+  'settings.version':       { de: 'Version',                        en: 'Version' },
 };
 
 export function t(key: string, lang: Lang): string {

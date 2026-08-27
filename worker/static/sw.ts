@@ -1,5 +1,5 @@
 export const SW = `
-const VER = 'v13';
+const VER = 'v14';
 const CACHE = 'recipes-' + VER;
 const PRECACHE = ['/', '/login', '/styles.css', '/app.js', '/manifest.json'];
 

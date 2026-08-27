@@ -274,6 +274,11 @@ function initNew() {
   function applyLlmResult(rawText, errEl) {
     try {
       parsedData = JSON.parse(rawText);
+      // Only clean the URL once we've actually succeeded — keeping ?llmResult=/?fromClipboard=1
+      // in the address bar until then means that if iOS reclaims this backgrounded tab while
+      // you're switching between Shortcuts/Private LLM and back, the reload still lands here
+      // instead of silently dropping back to the plain paste screen.
+      history.replaceState(null, '', location.pathname);
       var paste0 = document.getElementById('paste-phase');
       var clipPhase0 = document.getElementById('clipboard-phase');
       var form0  = document.getElementById('form-phase');
@@ -297,7 +302,6 @@ function initNew() {
   // path+query for very long URLs, which is what the clipboard path below is for.
   var llmResult = new URLSearchParams(location.search).get('llmResult');
   if (llmResult) {
-    history.replaceState(null, '', location.pathname);
     applyLlmResult(llmResult, document.getElementById('parse-error'));
   }
 
@@ -306,7 +310,6 @@ function initNew() {
   // Own dedicated screen (not just an extra button) so the state change is unmissable.
   var fromClipboard = new URLSearchParams(location.search).get('fromClipboard');
   if (fromClipboard) {
-    history.replaceState(null, '', location.pathname);
     var pasteEl0 = document.getElementById('paste-phase');
     var clipPhaseEl = document.getElementById('clipboard-phase');
     if (pasteEl0) pasteEl0.classList.add('hidden');

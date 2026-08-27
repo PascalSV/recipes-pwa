@@ -3,6 +3,7 @@ export interface Env {
   TOKEN_CLAUDIA: string;
   TOKEN_PASCAL: string;
   ALLOWED_USERS: string;
+  COMMIT_SHA: string;
 }
 
 export type Unit = 'g' | 'kg' | 'ml' | 'l' | 'tbsp' | 'tsp' | 'cup' | 'piece' | 'pck' | 'prise' | 'bunch' | 'can';

@@ -10,6 +10,8 @@ preview_bucket_name = "pascals-recipes"
 
 [vars]
 ALLOWED_USERS = "Claudia,Pascal"
+# Overridden with the actual git SHA at deploy time via `wrangler deploy --var COMMIT_SHA:...`
+COMMIT_SHA = "dev"
 
 [observability.logs]
 enabled = true
