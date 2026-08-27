@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import type { Env } from './types.ts';
 import { requirePage } from './lib/auth.ts';
+import { setCommitSha } from './lib/version.ts';
 import { getIndex, getRecipe } from './lib/r2.ts';
 import { getLangFromCookie, type Lang } from './lib/i18n.ts';
 import { authRoutes } from './routes/auth.ts';
@@ -28,6 +29,11 @@ const app = new Hono<{ Bindings: Env }>();
 function lang(c: { req: { header: (k: string) => string | undefined } }): Lang {
   return getLangFromCookie(c.req.header('Cookie') ?? '');
 }
+
+app.use('*', async (c, next) => {
+  setCommitSha(c.env.COMMIT_SHA);
+  await next();
+});
 
 // ---- Static assets ----
 
@@ -120,7 +126,7 @@ app.get('/recipe/:id/edit', async (c) => {
 app.get('/settings', (c) => {
   const session = requirePage(c);
   if (!session) return c.redirect('/login');
-  return c.html(settingsPage(session.user, lang(c), c.env.COMMIT_SHA));
+  return c.html(settingsPage(session.user, lang(c)));
 });
 
 // ---- 404 ----

@@ -215,6 +215,7 @@ a.list-item:active{background:rgba(42,157,110,.12)}
 
 /* ── Toast ── */
 .toast{position:fixed;bottom:calc(24px + var(--safe-b));left:50%;transform:translateX(-50%);background:rgba(28,28,30,.9);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);color:#fff;padding:11px 22px;border-radius:100px;font-size:15px;font-weight:500;z-index:999;pointer-events:none;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.2);animation:fadein .2s ease}
+.version-badge{position:fixed;bottom:calc(6px + var(--safe-b));left:8px;font-size:10px;font-family:ui-monospace,monospace;color:var(--text-3);opacity:.55;z-index:10;pointer-events:none;white-space:nowrap}
 @keyframes fadein{from{opacity:0;transform:translateX(-50%) translateY(6px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 
 /* ── Custom dialog ── */
