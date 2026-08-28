@@ -4,7 +4,7 @@
 # to confirm what's actually live, independent of any client-side caching.
 set -e
 
-sha=$(git rev-parse --short HEAD)
+sha=$(git rev-parse --short=8 HEAD)
 if [ -n "$(git status --porcelain)" ]; then
   sha="${sha}-dirty"
 fi
