@@ -1,4 +1,4 @@
-import { pageLayout, esc, PLUS_ICON, LOGOUT_ICON, CHEVRON, SETTINGS_ICON } from './layout.ts';
+import { pageLayout, esc, PLUS_ICON, CHEVRON, SETTINGS_ICON } from './layout.ts';
 import type { RecipeMeta } from '../types.ts';
 import { t, type Lang } from '../lib/i18n.ts';
 
@@ -8,7 +8,6 @@ export function listPage(recipes: RecipeMeta[], lang: Lang): string {
   const navRight = `
     <a href="/recipe/new" class="nav-btn" title="${esc(t('list.new', lang))}">${PLUS_ICON}</a>
     <a href="/settings" class="nav-btn" title="${esc(t('settings.title', lang))}">${SETTINGS_ICON}</a>
-    <button type="button" class="nav-btn" onclick="logout()" title="${esc(t('settings.sign_out', lang))}">${LOGOUT_ICON}</button>
   `;
 
   const listContent = grouped.length === 0
