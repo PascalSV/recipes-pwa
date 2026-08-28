@@ -5,8 +5,8 @@ export const JS = `
 // ---- Language ----
 var _lang = document.body.dataset.lang || 'de';
 var _T = {
-  de: { amount:'Menge', ingredient:'Zutat', describe_step:'Schritt beschreiben…', offline:'Offline gespeichert – wird synchronisiert', copied:'In Zwischenablage kopiert', share_fail:'Teilen fehlgeschlagen', portions:'Portionen', portion:'Portion', save:'Speichern', extract:'Extrahieren', add_ingredient:'Zutat hinzufügen', share:'Teilen', copy_link:'Link kopieren', print:'Drucken', cancel:'Abbrechen', shortcut_missing:'Kurzbefehl "Rezept extrahieren" wurde nicht gefunden. Bitte in der Kurzbefehle-App einrichten.', llm_bad_json:'Private LLM hat kein gültiges JSON geliefert. Bitte erneut versuchen.', clipboard_fail:'Zwischenablage konnte nicht gelesen werden. Bitte Berechtigung erteilen und erneut versuchen.' },
-  en: { amount:'Amount', ingredient:'Ingredient', describe_step:'Describe step…', offline:'Saved offline – will sync', copied:'Copied to clipboard', share_fail:'Sharing failed', portions:'Portions', portion:'Portion', save:'Save', extract:'Extract', add_ingredient:'Add ingredient', share:'Share', copy_link:'Copy link', print:'Print', cancel:'Cancel', shortcut_missing:'Shortcut "Rezept extrahieren" was not found. Please set it up in the Shortcuts app.', llm_bad_json:'Private LLM did not return valid JSON. Please try again.', clipboard_fail:'Could not read the clipboard. Please grant permission and try again.' }
+  de: { amount:'Menge', ingredient:'Zutat', describe_step:'Schritt beschreiben…', offline:'Offline gespeichert – wird synchronisiert', copied:'In Zwischenablage kopiert', share_fail:'Teilen fehlgeschlagen', portions:'Portionen', portion:'Portion', save:'Speichern', extract:'Extrahieren', add_ingredient:'Zutat hinzufügen', share:'Teilen', copy_link:'Link kopieren', print:'Drucken', cancel:'Abbrechen', llm_bad_json:'Private LLM hat kein gültiges JSON geliefert. Bitte erneut versuchen.', clipboard_fail:'Zwischenablage konnte nicht gelesen werden. Bitte Berechtigung erteilen und erneut versuchen.' },
+  en: { amount:'Amount', ingredient:'Ingredient', describe_step:'Describe step…', offline:'Saved offline – will sync', copied:'Copied to clipboard', share_fail:'Sharing failed', portions:'Portions', portion:'Portion', save:'Save', extract:'Extract', add_ingredient:'Add ingredient', share:'Share', copy_link:'Copy link', print:'Print', cancel:'Cancel', llm_bad_json:'Private LLM did not return valid JSON. Please try again.', clipboard_fail:'Could not read the clipboard. Please grant permission and try again.' }
 };
 function jst(key) { return (_T[_lang] || _T.de)[key] || key; }
 
@@ -342,24 +342,20 @@ function initNew() {
     var url = 'shortcuts://run-shortcut?name=' + encodeURIComponent(LLM_SHORTCUT_NAME) +
       '&input=text&text=' + encodeURIComponent(text);
 
-    // Safari gives no reliable success/failure callback for a custom URL scheme,
-    // so infer failure from the page never losing visibility (Shortcuts didn't open).
-    var launched = false;
-    var markLaunched = function () { launched = true; };
-    document.addEventListener('visibilitychange', markLaunched);
-    window.addEventListener('pagehide', markLaunched);
-
+    // No auto-revert-to-error here: Safari gives no reliable success/failure signal for
+    // a custom URL scheme (visibilitychange/pagehide don't fire consistently, especially
+    // on macOS), and Private LLM's actual inference time varies a lot with recipe length
+    // and model size. A timeout-based guess previously showed a false "not found" error
+    // while the Shortcut was still working fine — so the spinner just stays up until the
+    // Shortcut redirects back (?fromClipboard=1/?llmResult=), or the user cancels manually.
     window.location.href = url;
+  };
 
-    setTimeout(function () {
-      document.removeEventListener('visibilitychange', markLaunched);
-      window.removeEventListener('pagehide', markLaunched);
-      if (!launched) {
-        if (processingEl) processingEl.classList.add('hidden');
-        if (pasteEl) pasteEl.classList.remove('hidden');
-        if (errEl) { errEl.textContent = jst('shortcut_missing'); errEl.classList.remove('hidden'); }
-      }
-    }, 1500);
+  window.handleCancelProcessing = function () {
+    var pasteEl = document.getElementById('paste-phase');
+    var processingEl = document.getElementById('processing-phase');
+    if (processingEl) processingEl.classList.add('hidden');
+    if (pasteEl) pasteEl.classList.remove('hidden');
   };
 
   window.handleSkipParse = function () {

@@ -45,6 +45,9 @@ function recipePage({ lang, recipe }: { lang: Lang; recipe?: Recipe }): string {
     <div id="processing-phase" class="hidden" style="text-align:center;padding:80px 20px">
       <span class="spinner spinner-green" style="width:40px;height:40px;border-width:4px"></span>
       <p style="margin-top:20px;color:var(--text-2)">${t('new.processing', lang)}</p>
+      <button type="button" class="btn btn-secondary btn-sm mt-16" onclick="handleCancelProcessing()">
+        ${t('cancel', lang)}
+      </button>
     </div>
 
     <!-- Phase 0b: Private LLM is done — clipboard hand-off (shown for ?fromClipboard=1 only) -->

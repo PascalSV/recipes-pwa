@@ -134,7 +134,12 @@ test.describe('LLM import — URL hand-off (short recipes)', () => {
 });
 
 test.describe('LLM import — "Extrahieren" trigger', () => {
-  test('shows the processing screen immediately, reverts with an error if Shortcuts never opens', async ({ page }) => {
+  test('shows the processing screen immediately and keeps it up indefinitely', async ({ page }) => {
+    // No auto-revert-to-error on a timeout: Safari gives no reliable signal for whether a
+    // custom URL scheme actually opened (worse on macOS), and Private LLM's inference time
+    // varies a lot — a timeout guess previously showed a false "not found" error while the
+    // Shortcut was still working. So the spinner must stay up until the user cancels or the
+    // Shortcut redirects back on its own.
     await login(page);
     await page.goto('/recipe/new');
     await page.fill('#paste-input', 'Testrezept: 1 Ei, 200 ml Milch.');
@@ -143,10 +148,23 @@ test.describe('LLM import — "Extrahieren" trigger', () => {
     await expect(page.locator('#processing-phase')).toBeVisible();
     await expect(page.locator('#paste-phase')).toBeHidden();
 
-    // No shortcuts:// handler in a headless browser -> falls back after ~1.5s
-    await expect(page.locator('#paste-phase')).toBeVisible({ timeout: 3000 });
+    await page.waitForTimeout(3000); // well past the old 1.5s timeout
+    await expect(page.locator('#processing-phase')).toBeVisible();
+    await expect(page.locator('#paste-phase')).toBeHidden();
+    await expect(page.locator('#parse-error')).toBeHidden();
+  });
+
+  test('cancel button on the processing screen returns to the paste screen', async ({ page }) => {
+    await login(page);
+    await page.goto('/recipe/new');
+    await page.fill('#paste-input', 'Testrezept: 1 Ei, 200 ml Milch.');
+    await page.click('#parse-btn');
+    await expect(page.locator('#processing-phase')).toBeVisible();
+
+    await page.click('#processing-phase button');
+
+    await expect(page.locator('#paste-phase')).toBeVisible();
     await expect(page.locator('#processing-phase')).toBeHidden();
-    await expect(page.locator('#parse-error')).toBeVisible();
   });
 });
 
