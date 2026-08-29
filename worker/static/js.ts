@@ -5,8 +5,8 @@ export const JS = `
 // ---- Language ----
 var _lang = document.body.dataset.lang || 'de';
 var _T = {
-  de: { amount:'Menge', ingredient:'Zutat', describe_step:'Schritt beschreiben…', offline:'Offline gespeichert – wird synchronisiert', copied:'In Zwischenablage kopiert', share_fail:'Teilen fehlgeschlagen', portions:'Portionen', portion:'Portion', save:'Speichern', extract:'Extrahieren', add_ingredient:'Zutat hinzufügen', share:'Teilen', copy_link:'Link kopieren', print:'Drucken', cancel:'Abbrechen', llm_bad_json:'Private LLM hat kein gültiges JSON geliefert. Bitte erneut versuchen.', clipboard_fail:'Zwischenablage konnte nicht gelesen werden. Bitte Berechtigung erteilen und erneut versuchen.' },
-  en: { amount:'Amount', ingredient:'Ingredient', describe_step:'Describe step…', offline:'Saved offline – will sync', copied:'Copied to clipboard', share_fail:'Sharing failed', portions:'Portions', portion:'Portion', save:'Save', extract:'Extract', add_ingredient:'Add ingredient', share:'Share', copy_link:'Copy link', print:'Print', cancel:'Cancel', llm_bad_json:'Private LLM did not return valid JSON. Please try again.', clipboard_fail:'Could not read the clipboard. Please grant permission and try again.' }
+  de: { amount:'Menge', ingredient:'Zutat', describe_step:'Schritt beschreiben…', offline:'Offline gespeichert – wird synchronisiert', copied:'In Zwischenablage kopiert', share_fail:'Teilen fehlgeschlagen', portions:'Portionen', portion:'Portion', save:'Speichern', extract:'Extrahieren', add_ingredient:'Zutat hinzufügen', share:'Teilen', copy_link:'Link kopieren', print:'Drucken', cancel:'Abbrechen', llm_bad_json:'Private LLM hat kein gültiges JSON geliefert. Bitte erneut versuchen.', clipboard_fail:'Zwischenablage konnte nicht gelesen werden. Bitte Berechtigung erteilen und erneut versuchen.', discard_title:'Änderungen verwerfen?', discard_msg:'Alle nicht gespeicherten Änderungen gehen verloren.', discard_confirm:'Verwerfen', delete_title:'Rezept löschen?', delete_msg:'Diese Aktion kann nicht rückgängig gemacht werden.', delete_confirm:'Löschen', delete_error:'Fehler beim Löschen' },
+  en: { amount:'Amount', ingredient:'Ingredient', describe_step:'Describe step…', offline:'Saved offline – will sync', copied:'Copied to clipboard', share_fail:'Sharing failed', portions:'Portions', portion:'Portion', save:'Save', extract:'Extract', add_ingredient:'Add ingredient', share:'Share', copy_link:'Copy link', print:'Print', cancel:'Cancel', llm_bad_json:'Private LLM did not return valid JSON. Please try again.', clipboard_fail:'Could not read the clipboard. Please grant permission and try again.', discard_title:'Discard changes?', discard_msg:'All unsaved changes will be lost.', discard_confirm:'Discard', delete_title:'Delete recipe?', delete_msg:'This action cannot be undone.', delete_confirm:'Delete', delete_error:'Error deleting' }
 };
 function jst(key) { return (_T[_lang] || _T.de)[key] || key; }
 
@@ -88,7 +88,7 @@ function showDialog(opts) {
   ok.onclick = function() { close(); opts.onConfirm(); };
   var cancel = document.createElement('button');
   cancel.className = 'dialog-action dialog-action-cancel';
-  cancel.textContent = opts.cancelText || 'Abbrechen';
+  cancel.textContent = opts.cancelText || jst('cancel');
   cancel.onclick = close;
   sheet.appendChild(ok);
   sheet.appendChild(cancel);
@@ -282,9 +282,11 @@ function initNew() {
       var paste0 = document.getElementById('paste-phase');
       var clipPhase0 = document.getElementById('clipboard-phase');
       var form0  = document.getElementById('form-phase');
+      var saveBtn0 = document.getElementById('save-btn');
       if (paste0) paste0.classList.add('hidden');
       if (clipPhase0) clipPhase0.classList.add('hidden');
       if (form0)  form0.classList.remove('hidden');
+      if (saveBtn0) saveBtn0.classList.remove('hidden');
       populateForm(parsedData);
     } catch (e) {
       console.error('llmResult parse failed:', e, rawText);
@@ -361,8 +363,10 @@ function initNew() {
   window.handleSkipParse = function () {
     var paste = document.getElementById('paste-phase');
     var form  = document.getElementById('form-phase');
+    var saveBtn = document.getElementById('save-btn');
     if (paste) paste.classList.add('hidden');
     if (form)  form.classList.remove('hidden');
+    if (saveBtn) saveBtn.classList.remove('hidden');
   };
 
   window.handleSave = async function () {
@@ -449,9 +453,9 @@ function initEdit() {
 
   window.handleCancel = function() {
     showDialog({
-      title: 'Änderungen verwerfen?',
-      message: 'Alle nicht gespeicherten Änderungen gehen verloren.',
-      confirmText: 'Verwerfen',
+      title: jst('discard_title'),
+      message: jst('discard_msg'),
+      confirmText: jst('discard_confirm'),
       isDanger: true,
       onConfirm: function() { location.href = '/recipe/' + recipeId; }
     });
@@ -459,16 +463,16 @@ function initEdit() {
 
   window.handleDeleteRecipe = function() {
     showDialog({
-      title: 'Rezept löschen?',
-      message: 'Diese Aktion kann nicht rückgängig gemacht werden.',
-      confirmText: 'Löschen',
+      title: jst('delete_title'),
+      message: jst('delete_msg'),
+      confirmText: jst('delete_confirm'),
       isDanger: true,
       onConfirm: async function() {
         var res = await api('/api/recipes/' + recipeId, { method: 'DELETE' });
         if (res && res.ok) {
           location.href = '/';
         } else {
-          toast('Fehler beim Löschen');
+          toast(jst('delete_error'));
         }
       }
     });

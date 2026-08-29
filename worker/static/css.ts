@@ -63,9 +63,9 @@ img,svg{display:block}
 .nav-title{font-size:26px;font-weight:700;letter-spacing:-.5px;color:var(--green);padding:2px 16px 12px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .nav-btn{display:flex;align-items:center;justify-content:center;min-width:44px;height:44px;background:transparent;border:none;color:var(--green);border-radius:var(--radius-xs);flex-shrink:0;transition:background .15s;font-size:14px;font-weight:500;gap:4px;padding-inline:10px;white-space:nowrap;text-decoration:none}
 .nav-btn svg{width:22px;height:22px;flex-shrink:0}
-.nav-btn:active{background:var(--green-3)}
+.nav-btn:active{background:color-mix(in srgb,var(--green) 16%,transparent);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
 .nav-btn-danger{color:var(--danger)}
-.nav-btn-danger:active{background:var(--danger-bg)}
+.nav-btn-danger:active{background:color-mix(in srgb,var(--danger) 16%,transparent)}
 
 /* ── Page ── */
 .page{padding-bottom:calc(44px + var(--safe-b));max-width:700px;margin:0 auto}
@@ -87,13 +87,13 @@ a.list-item:active{background:rgba(42,157,110,.12)}
 .search-input::placeholder{color:var(--text-3)}
 
 /* ── Buttons ── */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:14px 22px;border-radius:var(--radius-s);font-size:16px;font-weight:600;border:none;transition:background .15s,opacity .15s;cursor:pointer;user-select:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:14px 22px;border-radius:var(--radius-s);font-size:16px;font-weight:600;border:1px solid transparent;transition:background .15s,opacity .15s;cursor:pointer;user-select:none;backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%)}
 .btn:disabled{opacity:.4;pointer-events:none}
-.btn-primary{background:var(--green);color:#fff}
-.btn-primary:active{background:var(--green-2)}
-.btn-secondary{background:var(--green-3);color:var(--green)}
-.btn-secondary:active{background:var(--green-4)}
-.btn-danger{background:var(--danger-bg);color:var(--danger)}
+.btn-primary{background:color-mix(in srgb,var(--green) 85%,transparent);color:#fff;border-color:color-mix(in srgb,var(--green) 45%,#fff 20%);box-shadow:var(--glass-shadow),inset 0 1px 0 rgba(255,255,255,.35)}
+.btn-primary:active{background:color-mix(in srgb,var(--green-2) 90%,transparent)}
+.btn-secondary{background:color-mix(in srgb,var(--green-3) 78%,transparent);color:var(--green);border-color:var(--glass-border);box-shadow:var(--glass-shadow)}
+.btn-secondary:active{background:color-mix(in srgb,var(--green-4) 85%,transparent)}
+.btn-danger{background:color-mix(in srgb,var(--danger-bg) 78%,transparent);color:var(--danger);border-color:color-mix(in srgb,var(--danger) 25%,transparent)}
 .btn-block{width:100%}
 .btn-sm{padding:9px 14px;font-size:14px;border-radius:var(--radius-xs)}
 
@@ -225,9 +225,9 @@ a.list-item:active{background:rgba(42,157,110,.12)}
 @keyframes scaleIn{from{opacity:0;transform:translate(-50%,-50%) scale(.94)}to{opacity:1;transform:translate(-50%,-50%) scale(1)}}
 .dialog-title{font-size:17px;font-weight:700;color:var(--text);text-align:center;padding-bottom:2px}
 .dialog-msg{font-size:14px;color:var(--text-2);text-align:center;line-height:1.5;padding-bottom:6px}
-.dialog-action{width:100%;padding:15px;border-radius:var(--radius-s);border:none;font-size:16px;font-weight:600;cursor:pointer;margin-bottom:0}
-.dialog-action-danger{background:#ff3b30;color:#fff}
-.dialog-action-cancel{background:var(--border-2);color:var(--text-2);margin-bottom:8px}
+.dialog-action{width:100%;padding:15px;border-radius:var(--radius-s);border:1px solid transparent;font-size:16px;font-weight:600;cursor:pointer;margin-bottom:0;backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%)}
+.dialog-action-danger{background:color-mix(in srgb,var(--danger) 85%,transparent);color:#fff;border-color:color-mix(in srgb,var(--danger) 45%,#fff 20%);box-shadow:inset 0 1px 0 rgba(255,255,255,.3)}
+.dialog-action-cancel{background:color-mix(in srgb,var(--text) 6%,transparent);color:var(--text-2);border-color:var(--border);margin-bottom:8px}
 
 .print-title{display:none}
 

@@ -23,12 +23,13 @@ function recipePage({ lang, recipe }: { lang: Lang; recipe?: Recipe }): string {
   const title = isEdit ? t('edit.title', lang) : t('new.title', lang);
   const page  = isEdit ? 'edit' : 'new';
 
-  const navLeft   = isEdit
-    ? `<a href="/recipe/${recipe!.id}" class="nav-btn">${BACK} ${t('back', lang)}</a> <button type="button" class="nav-btn" onclick="handleCancel()">${t('cancel', lang)}</button>`
-    : `<a href="/" class="nav-btn">${BACK} ${t('back', lang)}</a>`;
-  const navRight  = isEdit
-    ? `<button type="button" class="nav-btn nav-btn-danger" onclick="handleDeleteRecipe()">${TRASH_ICON}</button>`
-    : '';
+  const navLeft = `<a href="${isEdit ? '/recipe/' + esc(recipe!.id) : '/'}" class="nav-btn">${BACK} ${t('back', lang)}</a>`;
+  const saveBtnHtml = `<button id="save-btn" type="button" class="nav-btn${isEdit ? '' : ' hidden'}" onclick="handleSave()">${t('new.save', lang)}</button>`;
+  const navRight = isEdit
+    ? `<button type="button" class="nav-btn" onclick="handleCancel()">${t('cancel', lang)}</button>
+       <button type="button" class="nav-btn nav-btn-danger" onclick="handleDeleteRecipe()">${TRASH_ICON}</button>
+       ${saveBtnHtml}`
+    : saveBtnHtml;
   const groupOptions = GROUPS.map(g =>
     `<option value="${esc(g)}"${isEdit && recipe!.group === g ? ' selected' : ''}>${esc(g)}</option>`
   ).join('');
@@ -130,12 +131,6 @@ function recipePage({ lang, recipe }: { lang: Lang; recipe?: Recipe }): string {
             </button>
           </div>
         </div>
-      </div>
-
-      <div class="form-section" style="padding-bottom:40px">
-        <button id="save-btn" type="button" class="btn btn-primary btn-block mt-16" onclick="handleSave()">
-          ${t('new.save', lang)}
-        </button>
       </div>
     </div>
   `;
