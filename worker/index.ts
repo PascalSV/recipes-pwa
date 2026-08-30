@@ -65,7 +65,7 @@ app.get('/manifest.json', (c) =>
   c.json({
     name: 'Pascals Rezeptesammlung',
     short_name: 'Pascals Rezepte',
-    description: "Pascal's Recipe Collection",
+    description: "Pascal's Recipes",
     start_url: '/',
     display: 'standalone',
     background_color: '#f2f2f7',
