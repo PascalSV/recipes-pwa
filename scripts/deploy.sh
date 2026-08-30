@@ -12,7 +12,7 @@
 #   service worker's own Cache Storage.
 set -e
 
-sha=$(git rev-parse --short=8 HEAD)
+sha=$(git rev-parse --short HEAD)
 if [ -n "$(git status --porcelain)" ]; then
   sha="${sha}-dirty"
 fi
