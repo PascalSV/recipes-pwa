@@ -1,11 +1,9 @@
-import { pageLayout, esc } from './layout.ts';
+import { pageLayout, esc, BACK_ICON } from './layout.ts';
 import { t, type Lang } from '../lib/i18n.ts';
 import { getCommitSha } from '../lib/version.ts';
 
-const BACK = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`;
-
 export function settingsPage(user: string, lang: Lang): string {
-  const navLeft = `<a href="/" class="nav-btn">${BACK} ${t('back', lang)}</a>`;
+  const navLeft = `<a href="/" class="nav-btn nav-btn-icon" title="${esc(t('back', lang))}">${BACK_ICON}</a>`;
 
   const content = `
     <div class="settings-group-title">${t('settings.appearance', lang)}</div>

@@ -69,15 +69,24 @@ test.describe('Delete confirmation dialog', () => {
     expect(res.status()).toBe(404);
   });
 
-  test('discard-changes dialog appears when clicking Cancel nav button', async ({ page }) => {
-    // Trigger the cancel (discard) dialog
-    await page.click('button.nav-btn:not(.nav-btn-danger)');
+  test('back button navigates directly when no changes were made', async ({ page }) => {
+    // No edits made — Back should skip the discard dialog entirely
+    await page.click('.nav-left button');
+    await expect(page.locator('.dialog-sheet')).not.toBeAttached();
+    await expect(page).toHaveURL(`/recipe/${recipeId}`, { timeout: 8000 });
+  });
+
+  test('discard-changes dialog appears when clicking back after editing', async ({ page }) => {
+    await page.fill('#recipe-name', 'Geändertes Testrezept');
+    // Trigger the discard dialog
+    await page.click('.nav-left button');
     await expect(page.locator('.dialog-sheet')).toBeVisible();
     await expect(page.locator('.dialog-title')).toContainText('Änderungen');
   });
 
   test('discard confirm navigates to detail page', async ({ page }) => {
-    await page.click('button.nav-btn:not(.nav-btn-danger)');
+    await page.fill('#recipe-name', 'Geändertes Testrezept');
+    await page.click('.nav-left button');
     await expect(page.locator('.dialog-sheet')).toBeVisible();
     // Confirm discard
     await page.click('.dialog-action-danger');

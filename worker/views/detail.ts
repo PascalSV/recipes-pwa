@@ -1,8 +1,7 @@
-import { pageLayout, esc, SHARE_ICON } from './layout.ts';
+import { pageLayout, esc, SHARE_ICON, BACK_ICON } from './layout.ts';
 import type { Recipe, Ingredient } from '../types.ts';
 import { t, type Lang } from '../lib/i18n.ts';
 
-const BACK = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`;
 const EDIT_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
 
 const UNIT_DE: Record<string, string> = {
@@ -44,10 +43,10 @@ function renderIngredientRow(ing: Ingredient): string {
 }
 
 export function detailPage(recipe: Recipe, lang: Lang): string {
-  const navLeft  = `<a href="/" class="nav-btn">${BACK} ${t('back', lang)}</a>`;
+  const navLeft  = `<a href="/" class="nav-btn nav-btn-icon" title="${esc(t('back', lang))}">${BACK_ICON}</a>`;
   const navRight = `
-    <a href="/recipe/${esc(recipe.id)}/edit" class="nav-btn" title="${esc(t('edit.title', lang))}">${EDIT_ICON}</a>
-    <button type="button" class="nav-btn" onclick="shareRecipe()" title="${esc(t('share', lang))}">${SHARE_ICON}</button>`;
+    <a href="/recipe/${esc(recipe.id)}/edit" class="nav-btn nav-btn-icon" title="${esc(t('edit.title', lang))}">${EDIT_ICON}</a>
+    <button type="button" class="nav-btn nav-btn-icon" onclick="shareRecipe()" title="${esc(t('share', lang))}">${SHARE_ICON}</button>`;
 
   let ingredients: string;
   if (recipe.ingredientSections && recipe.ingredientSections.length > 0) {

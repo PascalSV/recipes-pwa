@@ -92,8 +92,8 @@ describe('editRecipePage', () => {
     expect(html).toContain('Edit Recipe');
   });
 
-  it('back link points to the recipe detail page', () => {
+  it('back button triggers dirty-check navigation instead of a plain link', () => {
     const html = editRecipePage(RECIPE, 'de');
-    expect(html).toContain(`href="/recipe/${RECIPE.id}"`);
+    expect(html).toContain('onclick="handleBack()"');
   });
 });

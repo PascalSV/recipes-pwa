@@ -1,8 +1,6 @@
-import { pageLayout, esc } from './layout.ts';
+import { pageLayout, esc, BACK_ICON, TRASH_ICON, CHECK_ICON } from './layout.ts';
 import { t, type Lang } from '../lib/i18n.ts';
 import type { Recipe } from '../types.ts';
-
-const BACK = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`;
 
 const GROUPS = [
   'Fleisch', 'Fisch', 'Pasta', 'Suppe', 'Salat',
@@ -22,11 +20,15 @@ function recipePage({ lang, recipe }: { lang: Lang; recipe?: Recipe }): string {
   const title = isEdit ? t('edit.title', lang) : t('new.title', lang);
   const page  = isEdit ? 'edit' : 'new';
 
-  const navLeft = `<a href="${isEdit ? '/recipe/' + esc(recipe!.id) : '/'}" class="nav-btn">${BACK} ${t('back', lang)}</a>`;
-  const saveBtnHtml = `<button id="save-btn" type="button" class="nav-btn${isEdit ? '' : ' hidden'}" onclick="handleSave()">${t('new.save', lang)}</button>`;
+  // On edit, Back also covers what a separate Cancel button used to do: if the form
+  // has unsaved changes it shows the discard-confirmation dialog, otherwise it just
+  // navigates back directly (see handleBack() in js.ts).
+  const navLeft = isEdit
+    ? `<button type="button" class="nav-btn nav-btn-icon" onclick="handleBack()" title="${esc(t('back', lang))}">${BACK_ICON}</button>`
+    : `<a href="/" class="nav-btn nav-btn-icon" title="${esc(t('back', lang))}">${BACK_ICON}</a>`;
+  const saveBtnHtml = `<button id="save-btn" type="button" class="nav-btn nav-btn-icon nav-btn-prominent${isEdit ? '' : ' hidden'}" onclick="handleSave()" title="${esc(t('new.save', lang))}">${CHECK_ICON}</button>`;
   const navRight = isEdit
-    ? `<button type="button" class="nav-btn" onclick="handleCancel()">${t('cancel', lang)}</button>
-       <button type="button" class="nav-btn nav-btn-danger" onclick="handleDeleteRecipe()">${t('delete', lang)}</button>
+    ? `<button type="button" class="nav-btn nav-btn-icon nav-btn-danger" onclick="handleDeleteRecipe()" title="${esc(t('delete', lang))}">${TRASH_ICON}</button>
        ${saveBtnHtml}`
     : saveBtnHtml;
   const groupOptions = GROUPS.map(g =>
@@ -75,7 +77,7 @@ function recipePage({ lang, recipe }: { lang: Lang; recipe?: Recipe }): string {
             placeholder="${esc(t('new.paste_ph', lang))}"
             style="min-height:180px"></textarea>
         </div>
-        <button id="parse-btn" type="button" class="btn btn-primary btn-block mt-16"
+        <button id="parse-btn" type="button" class="btn btn-secondary btn-block mt-16"
           disabled onclick="handleParse()">
           ${t('new.extract', lang)}
         </button>

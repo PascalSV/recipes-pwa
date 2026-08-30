@@ -378,7 +378,8 @@ function initNew() {
       return;
     }
     var saveBtn = document.getElementById('save-btn');
-    if (saveBtn) { saveBtn.disabled = true; saveBtn.innerHTML = '<span class="spinner"></span> Speichern'; }
+    var saveBtnIcon = saveBtn ? saveBtn.innerHTML : '';
+    if (saveBtn) { saveBtn.disabled = true; saveBtn.innerHTML = '<span class="spinner"></span>'; }
 
     var id = crypto.randomUUID();
     var now = new Date().toISOString();
@@ -412,7 +413,7 @@ function initNew() {
       setTimeout(function () { location.href = '/'; }, 1500);
     } else {
       // Server error — show status and re-enable button
-      if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = jst('save'); }
+      if (saveBtn) { saveBtn.disabled = false; saveBtn.innerHTML = saveBtnIcon; }
       toast('Error ' + res.status + ' – ' + (res.statusText || 'save failed'));
     }
   };
@@ -451,14 +452,22 @@ function initEdit() {
   if (!recipeId) return;
   initNew();
 
-  window.handleCancel = function() {
-    showDialog({
-      title: jst('discard_title'),
-      message: jst('discard_msg'),
-      confirmText: jst('discard_confirm'),
-      isDanger: true,
-      onConfirm: function() { location.href = '/recipe/' + recipeId; }
-    });
+  // Captured once initial data has loaded (see below); null means "still loading",
+  // which handleBack treats as "assume changes exist" — the safe default.
+  var baselineSnapshot = null;
+
+  window.handleBack = function() {
+    if (baselineSnapshot === null || collectFormSnapshot() !== baselineSnapshot) {
+      showDialog({
+        title: jst('discard_title'),
+        message: jst('discard_msg'),
+        confirmText: jst('discard_confirm'),
+        isDanger: true,
+        onConfirm: function() { location.href = '/recipe/' + recipeId; }
+      });
+    } else {
+      location.href = '/recipe/' + recipeId;
+    }
   };
 
   window.handleDeleteRecipe = function() {
@@ -497,13 +506,17 @@ function initEdit() {
     var timeEl = document.getElementById('recipe-time');
     if (timeEl) timeEl.value = _recipe.cookingTime || '';
 
+    // Now that the form reflects the saved recipe, this is "no changes yet".
+    baselineSnapshot = collectFormSnapshot();
+
     // Override handleSave to keep original ID and createdAt
     window.handleSave = function handleEditSave() {
       var name = (document.getElementById('recipe-name') || {}).value || '';
       name = name.trim();
       if (!name) { var n = document.getElementById('recipe-name'); if (n) n.focus(); return; }
       var saveBtn = document.getElementById('save-btn');
-      if (saveBtn) { saveBtn.disabled = true; saveBtn.innerHTML = '<span class="spinner"></span> ' + jst('save'); }
+      var saveBtnIcon = saveBtn ? saveBtn.innerHTML : '';
+      if (saveBtn) { saveBtn.disabled = true; saveBtn.innerHTML = '<span class="spinner"></span>'; }
       var now = new Date().toISOString();
       var cookingTimeVal = parseInt((document.getElementById('recipe-time') || {}).value || '0', 10);
       var updated = {
@@ -530,7 +543,7 @@ function initEdit() {
           toast(jst('offline'));
           setTimeout(function () { location.href = '/recipe/' + _recipe.id; }, 1500);
         } else {
-          if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = jst('save'); }
+          if (saveBtn) { saveBtn.disabled = false; saveBtn.innerHTML = saveBtnIcon; }
           toast('Error ' + res.status);
         }
       });
@@ -839,6 +852,19 @@ function collectProcedure() {
   return Array.from(document.querySelectorAll('.step-input'))
     .map(function (t) { return t.value.trim(); })
     .filter(Boolean);
+}
+
+// Used to detect unsaved changes (e.g. deciding whether Back needs to confirm discarding).
+function collectFormSnapshot() {
+  return JSON.stringify({
+    name: ((document.getElementById('recipe-name') || {}).value || '').trim(),
+    group: (document.getElementById('recipe-group') || {}).value || 'Sonstiges',
+    defaultPortions: parseInt((document.getElementById('recipe-portions') || {}).value || '4', 10),
+    cookingTime: parseInt((document.getElementById('recipe-time') || {}).value || '0', 10),
+    ingredientSections: collectIngredientSections(),
+    ingredients: collectIngredients(),
+    procedure: collectProcedure()
+  });
 }
 
 // ---- Settings ----
