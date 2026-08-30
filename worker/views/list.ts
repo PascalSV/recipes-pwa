@@ -6,8 +6,8 @@ export function listPage(recipes: RecipeMeta[], lang: Lang): string {
   const grouped = groupByCategory(recipes);
 
   const navRight = `
-    <a href="/recipe/new" class="nav-btn" title="${esc(t('list.new', lang))}">${PLUS_ICON}</a>
-    <a href="/settings" class="nav-btn" title="${esc(t('settings.title', lang))}">${SETTINGS_ICON}</a>
+    <a href="/recipe/new" class="nav-btn nav-btn-icon" title="${esc(t('list.new', lang))}">${PLUS_ICON}</a>
+    <a href="/settings" class="nav-btn nav-btn-icon" title="${esc(t('settings.title', lang))}">${SETTINGS_ICON}</a>
   `;
 
   const listContent = grouped.length === 0

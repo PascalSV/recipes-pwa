@@ -4,6 +4,7 @@ const T: Record<string, Record<Lang, string>> = {
   // Navigation
   'back':                   { de: 'Zurück',                         en: 'Back' },
   'cancel':                 { de: 'Abbrechen',                      en: 'Cancel' },
+  'delete':                 { de: 'Löschen',                        en: 'Delete' },
   'share':                  { de: 'Teilen',                         en: 'Share' },
 
   // Login
@@ -43,7 +44,7 @@ const T: Record<string, Record<Lang, string>> = {
   'new.add_ingredient':     { de: '+ Zutat hinzufügen',             en: '+ Add ingredient' },
   'new.preparation':        { de: 'Zubereitung',                    en: 'Preparation' },
   'new.add_step':           { de: '+ Schritt hinzufügen',           en: '+ Add step' },
-  'new.save':               { de: 'Rezept speichern',               en: 'Save recipe' },
+  'new.save':               { de: 'Speichern',                      en: 'Save' },
   'new.ing_amount':         { de: 'Menge',                          en: 'Amount' },
   'new.ing_name':           { de: 'Zutat',                          en: 'Ingredient' },
   'new.step_ph':            { de: 'Schritt beschreiben…',           en: 'Describe step…' },

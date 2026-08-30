@@ -58,9 +58,9 @@ ${THEME_SCRIPT}
 <header class="nav">
   <div class="nav-row">
     <div class="nav-left">${opts.navLeft ?? ''}</div>
+    <h1 class="nav-title">${esc(opts.title)}</h1>
     <div class="nav-right">${opts.navRight ?? ''}</div>
   </div>
-  <h1 class="nav-title">${esc(opts.title)}</h1>
 </header>
 <div class="page">
 ${opts.content}

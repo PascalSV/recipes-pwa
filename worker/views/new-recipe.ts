@@ -3,7 +3,6 @@ import { t, type Lang } from '../lib/i18n.ts';
 import type { Recipe } from '../types.ts';
 
 const BACK = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>`;
-const TRASH_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`;
 
 const GROUPS = [
   'Fleisch', 'Fisch', 'Pasta', 'Suppe', 'Salat',
@@ -27,7 +26,7 @@ function recipePage({ lang, recipe }: { lang: Lang; recipe?: Recipe }): string {
   const saveBtnHtml = `<button id="save-btn" type="button" class="nav-btn${isEdit ? '' : ' hidden'}" onclick="handleSave()">${t('new.save', lang)}</button>`;
   const navRight = isEdit
     ? `<button type="button" class="nav-btn" onclick="handleCancel()">${t('cancel', lang)}</button>
-       <button type="button" class="nav-btn nav-btn-danger" onclick="handleDeleteRecipe()">${TRASH_ICON}</button>
+       <button type="button" class="nav-btn nav-btn-danger" onclick="handleDeleteRecipe()">${t('delete', lang)}</button>
        ${saveBtnHtml}`
     : saveBtnHtml;
   const groupOptions = GROUPS.map(g =>
