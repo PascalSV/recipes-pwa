@@ -10,6 +10,7 @@ function makeEnv(pascal: string, claudia: string): Env {
     TOKEN_CLAUDIA: claudia,
     ALLOWED_USERS: 'Claudia,Pascal',
     COMMIT_SHA: 'test',
+    SW_VERSION: 'test',
   };
 }
 

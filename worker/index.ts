@@ -58,7 +58,7 @@ app.get('/app.js', (c) =>
 );
 
 app.get('/sw.js', (c) =>
-  c.text(SW, 200, { 'Content-Type': 'application/javascript;charset=UTF-8', 'Cache-Control': 'no-store' })
+  c.text(SW.replace('__SW_VERSION__', c.env.SW_VERSION), 200, { 'Content-Type': 'application/javascript;charset=UTF-8', 'Cache-Control': 'no-store' })
 );
 
 app.get('/manifest.json', (c) =>

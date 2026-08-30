@@ -4,6 +4,7 @@ export interface Env {
   TOKEN_PASCAL: string;
   ALLOWED_USERS: string;
   COMMIT_SHA: string;
+  SW_VERSION: string;
 }
 
 export type Unit = 'g' | 'kg' | 'ml' | 'l' | 'tbsp' | 'tsp' | 'cup' | 'piece' | 'pck' | 'prise' | 'bunch' | 'can';

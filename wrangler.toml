@@ -10,8 +10,11 @@ preview_bucket_name = "pascals-recipes"
 
 [vars]
 ALLOWED_USERS = "Claudia,Pascal"
-# Overridden with the actual git SHA at deploy time via `wrangler deploy --var COMMIT_SHA:...`
+# Overridden at deploy time (see scripts/deploy.sh) — COMMIT_SHA with the actual git
+# SHA, SW_VERSION with a value that's unique per deploy so the service worker's cache
+# always invalidates, even across deploys from an uncommitted working tree.
 COMMIT_SHA = "dev"
+SW_VERSION = "dev"
 
 [observability.logs]
 enabled = true
