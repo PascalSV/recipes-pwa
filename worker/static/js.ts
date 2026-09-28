@@ -5,8 +5,8 @@ export const JS = `
 // ---- Language ----
 var _lang = document.body.dataset.lang || 'de';
 var _T = {
-  de: { amount:'Menge', ingredient:'Zutat', describe_step:'Schritt beschreiben…', offline:'Offline gespeichert – wird synchronisiert', copied:'In Zwischenablage kopiert', share_fail:'Teilen fehlgeschlagen', portions:'Portionen', portion:'Portion', save:'Speichern', extract:'Extrahieren', add_ingredient:'Zutat hinzufügen', share:'Teilen', copy_link:'Link kopieren', print:'Drucken', cancel:'Abbrechen', llm_bad_json:'Private LLM hat kein gültiges JSON geliefert. Bitte erneut versuchen.', clipboard_fail:'Zwischenablage konnte nicht gelesen werden. Bitte Berechtigung erteilen und erneut versuchen.', discard_title:'Änderungen verwerfen?', discard_msg:'Alle nicht gespeicherten Änderungen gehen verloren.', discard_confirm:'Verwerfen', delete_title:'Rezept löschen?', delete_msg:'Diese Aktion kann nicht rückgängig gemacht werden.', delete_confirm:'Löschen', delete_error:'Fehler beim Löschen' },
-  en: { amount:'Amount', ingredient:'Ingredient', describe_step:'Describe step…', offline:'Saved offline – will sync', copied:'Copied to clipboard', share_fail:'Sharing failed', portions:'Portions', portion:'Portion', save:'Save', extract:'Extract', add_ingredient:'Add ingredient', share:'Share', copy_link:'Copy link', print:'Print', cancel:'Cancel', llm_bad_json:'Private LLM did not return valid JSON. Please try again.', clipboard_fail:'Could not read the clipboard. Please grant permission and try again.', discard_title:'Discard changes?', discard_msg:'All unsaved changes will be lost.', discard_confirm:'Discard', delete_title:'Delete recipe?', delete_msg:'This action cannot be undone.', delete_confirm:'Delete', delete_error:'Error deleting' }
+  de: { amount:'Menge', ingredient:'Zutat', describe_step:'Schritt beschreiben…', offline:'Offline gespeichert – wird synchronisiert', copied:'In Zwischenablage kopiert', share_fail:'Teilen fehlgeschlagen', portions:'Portionen', portion:'Portion', save:'Speichern', extract:'Extrahieren', add_ingredient:'Zutat hinzufügen', share:'Teilen', copy_link:'Link kopieren', print:'Drucken', cancel:'Abbrechen', llm_bad_json:'Private LLM hat kein gültiges JSON geliefert. Bitte erneut versuchen.', clipboard_fail:'Zwischenablage konnte nicht gelesen werden. Bitte Berechtigung erteilen und erneut versuchen.', discard_title:'Änderungen verwerfen?', discard_msg:'Alle nicht gespeicherten Änderungen gehen verloren.', discard_confirm:'Verwerfen', delete_title:'Rezept löschen?', delete_msg:'Diese Aktion kann nicht rückgängig gemacht werden.', delete_confirm:'Löschen', delete_error:'Fehler beim Löschen', delete_row:'Löschen' },
+  en: { amount:'Amount', ingredient:'Ingredient', describe_step:'Describe step…', offline:'Saved offline – will sync', copied:'Copied to clipboard', share_fail:'Sharing failed', portions:'Portions', portion:'Portion', save:'Save', extract:'Extract', add_ingredient:'Add ingredient', share:'Share', copy_link:'Copy link', print:'Print', cancel:'Cancel', llm_bad_json:'Private LLM did not return valid JSON. Please try again.', clipboard_fail:'Could not read the clipboard. Please grant permission and try again.', discard_title:'Discard changes?', discard_msg:'All unsaved changes will be lost.', discard_confirm:'Discard', delete_title:'Delete recipe?', delete_msg:'This action cannot be undone.', delete_confirm:'Delete', delete_error:'Error deleting', delete_row:'Delete' }
 };
 function jst(key) { return (_T[_lang] || _T.de)[key] || key; }
 
@@ -593,6 +593,67 @@ document.addEventListener('touchstart', function(e) {
   if (_openSwipe && !_openSwipe.contains(e.target)) closeAllSwipes(null);
 }, { passive: true });
 
+// Drag-to-reorder for ingredient rows. Scoped to the grip handle so it never
+// competes with the row's horizontal swipe-to-delete. Rows are reordered live
+// within their own section list (no moving between sections).
+//
+// Move/up listeners live on the document, not the handle: reordering re-inserts
+// the wrap (which contains the handle) into the DOM, and Chromium drops pointer
+// capture when the capturing element is re-parented, which would freeze the drag
+// after the first swap. Document listeners keep firing regardless.
+function makeRowDraggable(handle, wrap) {
+  var dragging = false;
+
+  function pointY(e) {
+    if (e.touches && e.touches[0]) return e.touches[0].clientY;
+    return e.clientY;
+  }
+
+  function onMove(e) {
+    if (!dragging) return;
+    if (e.cancelable) e.preventDefault();
+    var list = wrap.parentNode;
+    if (!list) return;
+    var y = pointY(e);
+    var siblings = Array.prototype.filter.call(list.children, function(c) {
+      return c !== wrap && c.classList && c.classList.contains('ing-swipe-wrap');
+    });
+    var target = null;
+    for (var i = 0; i < siblings.length; i++) {
+      var r = siblings[i].getBoundingClientRect();
+      if (y < r.top + r.height / 2) { target = siblings[i]; break; }
+    }
+    if (target) {
+      if (target !== wrap && target !== wrap.nextElementSibling) list.insertBefore(wrap, target);
+    } else if (list.lastElementChild !== wrap) {
+      list.appendChild(wrap);
+    }
+  }
+
+  function onUp() {
+    if (!dragging) return;
+    dragging = false;
+    wrap.classList.remove('dragging');
+    document.body.style.userSelect = '';
+    document.removeEventListener('pointermove', onMove, true);
+    document.removeEventListener('pointerup', onUp, true);
+    document.removeEventListener('pointercancel', onUp, true);
+  }
+
+  handle.addEventListener('pointerdown', function(e) {
+    if (e.button != null && e.button !== 0) return;
+    if (!wrap.parentNode) return;
+    dragging = true;
+    closeAllSwipes(null);
+    wrap.classList.add('dragging');
+    document.body.style.userSelect = 'none';
+    document.addEventListener('pointermove', onMove, true);
+    document.addEventListener('pointerup', onUp, true);
+    document.addEventListener('pointercancel', onUp, true);
+    e.preventDefault();
+  });
+}
+
 function createIngRow(ing) {
   var div = document.createElement('div');
   div.className = 'ing-editor-row';
@@ -614,23 +675,32 @@ function createIngRow(ing) {
     '<select class="select ing-unit">' + opts + '</select>' +
     '<input type="text" class="input ing-name" placeholder="' + jst('ingredient') + '" value="' + esc(nameVal) + '">';
 
+  var handle = document.createElement('button');
+  handle.type = 'button';
+  handle.className = 'ing-drag-handle';
+  handle.setAttribute('aria-label', _lang === 'en' ? 'Drag to reorder' : 'Zum Umsortieren ziehen');
+  handle.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="5" r="1.6"/><circle cx="15" cy="5" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="19" r="1.6"/><circle cx="15" cy="19" r="1.6"/></svg>';
+  div.insertBefore(handle, div.firstChild);
+
   var wrap = document.createElement('div');
   wrap.className = 'ing-swipe-wrap';
 
   var delBtn = document.createElement('button');
   delBtn.type = 'button';
   delBtn.className = 'ing-swipe-delete';
-  delBtn.textContent = 'Löschen';
+  delBtn.textContent = jst('delete_row');
   delBtn.addEventListener('click', function() { wrap.remove(); });
 
   wrap.appendChild(div);
   wrap.appendChild(delBtn);
+  makeRowDraggable(handle, wrap);
 
   var DEL_W = 80;
   var swStartX, swStartY, swTracking, swBase;
 
   div.addEventListener('touchstart', function(e) {
     if (e.touches.length !== 1) return;
+    if (e.target.closest && e.target.closest('.ing-drag-handle')) { swTracking = 'skip'; return; }
     swStartX = e.touches[0].clientX;
     swStartY = e.touches[0].clientY;
     swTracking = null;
@@ -640,6 +710,7 @@ function createIngRow(ing) {
 
   div.addEventListener('touchmove', function(e) {
     if (e.touches.length !== 1) return;
+    if (swTracking === 'skip') return;
     var dx = e.touches[0].clientX - swStartX;
     var dy = e.touches[0].clientY - swStartY;
     if (!swTracking) {
@@ -733,7 +804,7 @@ function createStepRow(text, idx) {
   var delBtn = document.createElement('button');
   delBtn.type = 'button';
   delBtn.className = 'ing-swipe-delete';
-  delBtn.textContent = 'Löschen';
+  delBtn.textContent = jst('delete_row');
   delBtn.addEventListener('click', function() { wrap.remove(); if (window.renumberSteps) window.renumberSteps(); });
 
   var row = document.createElement('div');

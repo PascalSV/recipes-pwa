@@ -138,8 +138,8 @@ test.describe('Step swipe-to-delete', () => {
 
 // Touch swipe tests — only run when touch is available (mobile project)
 test.describe('Step swipe gesture (mobile)', () => {
-  test.skip(({ browserName }) => browserName !== 'chromium' || !process.env.PLAYWRIGHT_MOBILE,
-    'Skipped: touch swipe only tested on mobile project');
+  test.skip(({ browserName, hasTouch }) => browserName !== 'chromium' || !hasTouch,
+    'Skipped: touch swipe only tested on the mobile project');
 
   let recipeId: string;
 
@@ -152,23 +152,26 @@ test.describe('Step swipe gesture (mobile)', () => {
 
   test('swipe left on step row reveals delete button', async ({ page }) => {
     const row = page.locator('.step-swipe-wrap').first().locator('.step-row');
-    const box = await row.boundingBox();
-    if (!box) throw new Error('step-row not found');
+    await row.scrollIntoViewIfNeeded();
 
-    const startX = box.x + box.width - 10;
-    const endX = box.x + 10;
-    const y = box.y + box.height / 2;
+    // Real touch swipe via CDP — page.mouse events do not fire touch handlers
+    const cdp = await page.context().newCDPSession(page);
+    const { startX, endX, y } = await page.evaluate(() => {
+      const r = document.querySelector('.step-swipe-wrap .step-row')!.getBoundingClientRect();
+      return { startX: r.left + r.width - 10, endX: r.left + 10, y: r.top + r.height / 2 };
+    });
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: startX, y }] });
+    for (let i = 1; i <= 10; i++) {
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x: startX + ((endX - startX) * i) / 10, y }] });
+    }
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [{ x: endX, y }] });
 
-    // Simulate swipe via touch events
-    await page.touchscreen.tap(startX, y);
-    await page.waitForTimeout(50);
-    await page.mouse.move(startX, y);
-    await page.mouse.down();
-    await page.mouse.move(endX, y, { steps: 10 });
-    await page.mouse.up();
+    // The row must actually translate to reveal the button
+    await expect
+      .poll(async () => page.evaluate(() => document.querySelector('.step-swipe-wrap .step-row')!.style.transform))
+      .toBe('translateX(-80px)');
 
-    // After swipe, the delete button should be visible
     const delBtn = page.locator('.step-swipe-wrap').first().locator('.ing-swipe-delete');
-    await expect(delBtn).toBeVisible({ timeout: 2000 });
+    await expect(delBtn).toBeVisible();
   });
 });

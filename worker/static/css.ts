@@ -201,15 +201,25 @@ a.list-item:active{background:rgba(42,157,110,.12)}
 .ing-swipe-wrap{position:relative;overflow:hidden;border-bottom:1px solid var(--border-2)}
 .ing-swipe-wrap:last-child{border-bottom:none}
 .ing-swipe-delete{position:absolute;right:0;top:0;bottom:0;width:80px;background:#ff3b30;color:#fff;border:none;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;letter-spacing:.01em}
-.ing-editor-row{display:grid;grid-template-columns:60px 70px 1fr;gap:8px;align-items:center;padding:10px 0;position:relative;z-index:1;background:var(--bg-card);will-change:transform}
-.ing-editor-row .input,.ing-editor-row .select{padding:9px 10px;font-size:15px}
-.ing-editor-row .select{padding-right:28px}
+.ing-editor-row{display:grid;grid-template-columns:18px 64px 70px 1fr;gap:6px;align-items:center;padding:10px 0;position:relative;z-index:1;background:var(--bg-card);will-change:transform}
+.ing-editor-row .input,.ing-editor-row .select{padding:9px 8px;font-size:15px}
+.ing-editor-row .select{padding-right:26px}
+.ing-drag-handle{display:flex;align-items:center;justify-content:center;align-self:stretch;width:18px;margin-left:-2px;color:var(--text-3);background:transparent;border:none;cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none}
+.ing-drag-handle:active{cursor:grabbing}
+.ing-drag-handle svg{width:16px;height:16px;pointer-events:none}
+.ing-swipe-wrap.dragging{overflow:visible;z-index:20}
+.ing-swipe-wrap.dragging .ing-swipe-delete{opacity:0}
+.ing-swipe-wrap.dragging .ing-editor-row{box-shadow:var(--shadow);border-radius:var(--radius-xs);opacity:.97}
 .del-btn{width:32px;height:32px;border-radius:50%;background:transparent;color:var(--text-3);border:none;font-size:20px;display:flex;align-items:center;justify-content:center;transition:color .12s;flex-shrink:0}
 .del-btn:active{color:var(--danger)}
 .step-swipe-wrap{position:relative;overflow:hidden;border-bottom:1px solid var(--border-2)}
 .step-swipe-wrap:last-child{border-bottom:none}
 .step-row{display:flex;align-items:flex-start;gap:8px;padding:6px 0;position:relative;z-index:1;background:var(--bg-card);will-change:transform}
 .step-row .step-num{color:var(--green);font-weight:800;font-size:13px;padding-top:14px;min-width:22px;flex-shrink:0}
+/* Fine-pointer devices: the row would otherwise cover the button, which a
+   mouse can only reach after a touch swipe. Keep the button on top and reserve
+   its 80px strip. Touch devices don't match, so swipe-to-reveal is unchanged. */
+@media (hover:hover) and (pointer:fine){.ing-swipe-delete{z-index:2}.step-row,.ing-editor-row{padding-right:80px}}
 
 /* ── Misc ── */
 .spinner{display:inline-block;width:20px;height:20px;border:2.5px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}

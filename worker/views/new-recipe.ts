@@ -1,4 +1,4 @@
-import { pageLayout, esc, BACK_ICON, TRASH_ICON, CHECK_ICON } from './layout.ts';
+import { pageLayout, esc, BACK_ICON, TRASH_ICON, SAVE_ICON } from './layout.ts';
 import { t, type Lang } from '../lib/i18n.ts';
 import type { Recipe } from '../types.ts';
 
@@ -26,7 +26,7 @@ function recipePage({ lang, recipe }: { lang: Lang; recipe?: Recipe }): string {
   const navLeft = isEdit
     ? `<button type="button" class="nav-btn nav-btn-icon" onclick="handleBack()" title="${esc(t('back', lang))}">${BACK_ICON}</button>`
     : `<a href="/" class="nav-btn nav-btn-icon" title="${esc(t('back', lang))}">${BACK_ICON}</a>`;
-  const saveBtnHtml = `<button id="save-btn" type="button" class="nav-btn nav-btn-icon nav-btn-prominent${isEdit ? '' : ' hidden'}" onclick="handleSave()" title="${esc(t('new.save', lang))}">${CHECK_ICON}</button>`;
+  const saveBtnHtml = `<button id="save-btn" type="button" class="nav-btn nav-btn-icon nav-btn-prominent${isEdit ? '' : ' hidden'}" onclick="handleSave()" title="${esc(t('new.save', lang))}">${SAVE_ICON}</button>`;
   const navRight = isEdit
     ? `<button type="button" class="nav-btn nav-btn-icon nav-btn-danger" onclick="handleDeleteRecipe()" title="${esc(t('delete', lang))}">${TRASH_ICON}</button>
        ${saveBtnHtml}`
