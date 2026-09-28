@@ -269,6 +269,25 @@ function initNew() {
     parseBtn.disabled = !this.value.trim();
   });
 
+  // Back on this page doubles as Cancel (there is no separate cancel button).
+  // The baseline is the untouched form, captured before the LLM handoff below can
+  // fill it in — arriving via ?llmResult= therefore counts as "has changes", so
+  // Back offers to discard instead of silently throwing away the parsed recipe.
+  var newBaseline = collectFormSnapshot();
+  window.handleBack = function() {
+    if (collectFormSnapshot() !== newBaseline) {
+      showDialog({
+        title: jst('discard_title'),
+        message: jst('discard_msg'),
+        confirmText: jst('discard_confirm'),
+        isDanger: true,
+        onConfirm: function() { location.href = '/'; }
+      });
+    } else {
+      location.href = '/';
+    }
+  };
+
   // Shared by both hand-off paths below: parse the extracted-recipe JSON and
   // skip straight to the form, or show what actually came back if it's not valid JSON.
   function applyLlmResult(rawText, errEl) {
@@ -593,16 +612,20 @@ document.addEventListener('touchstart', function(e) {
   if (_openSwipe && !_openSwipe.contains(e.target)) closeAllSwipes(null);
 }, { passive: true });
 
-// Drag-to-reorder for ingredient rows. Scoped to the grip handle so it never
+// Drag-to-reorder for editor rows. Scoped to the grip handle so it never
 // competes with the row's horizontal swipe-to-delete. Rows are reordered live
 // within their own section list (no moving between sections).
+// rowClass picks which siblings are in scope (ingredients: .ing-swipe-wrap,
+// steps: .step-swipe-wrap); onSettled runs once when the drag is released
+// (steps use it to renumber).
 //
 // Move/up listeners live on the document, not the handle: reordering re-inserts
 // the wrap (which contains the handle) into the DOM, and Chromium drops pointer
 // capture when the capturing element is re-parented, which would freeze the drag
 // after the first swap. Document listeners keep firing regardless.
-function makeRowDraggable(handle, wrap) {
+function makeRowDraggable(handle, wrap, rowClass, onSettled) {
   var dragging = false;
+  rowClass = rowClass || 'ing-swipe-wrap';
 
   function pointY(e) {
     if (e.touches && e.touches[0]) return e.touches[0].clientY;
@@ -616,7 +639,7 @@ function makeRowDraggable(handle, wrap) {
     if (!list) return;
     var y = pointY(e);
     var siblings = Array.prototype.filter.call(list.children, function(c) {
-      return c !== wrap && c.classList && c.classList.contains('ing-swipe-wrap');
+      return c !== wrap && c.classList && c.classList.contains(rowClass);
     });
     var target = null;
     for (var i = 0; i < siblings.length; i++) {
@@ -638,6 +661,7 @@ function makeRowDraggable(handle, wrap) {
     document.removeEventListener('pointermove', onMove, true);
     document.removeEventListener('pointerup', onUp, true);
     document.removeEventListener('pointercancel', onUp, true);
+    if (onSettled) onSettled();
   }
 
   handle.addEventListener('pointerdown', function(e) {
@@ -810,6 +834,12 @@ function createStepRow(text, idx) {
   var row = document.createElement('div');
   row.className = 'step-row';
 
+  var handle = document.createElement('button');
+  handle.type = 'button';
+  handle.className = 'ing-drag-handle';
+  handle.setAttribute('aria-label', _lang === 'en' ? 'Drag to reorder' : 'Zum Umsortieren ziehen');
+  handle.innerHTML = '<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="9" cy="5" r="1.6"/><circle cx="15" cy="5" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="19" r="1.6"/><circle cx="15" cy="19" r="1.6"/></svg>';
+
   var num = document.createElement('span');
   num.className = 'step-num';
   num.textContent = String(idx + 1).padStart(2, '0');
@@ -821,16 +851,19 @@ function createStepRow(text, idx) {
   ta.placeholder = jst('describe_step');
   if (text) ta.value = text;
 
+  row.appendChild(handle);
   row.appendChild(num);
   row.appendChild(ta);
   wrap.appendChild(delBtn);
   wrap.appendChild(row);
+  makeRowDraggable(handle, wrap, 'step-swipe-wrap', function() { if (window.renumberSteps) window.renumberSteps(); });
 
   var DEL_W = 80;
   var swStartX, swStartY, swTracking, swBase;
 
   row.addEventListener('touchstart', function(e) {
     if (e.touches.length !== 1) return;
+    if (e.target.closest && e.target.closest('.ing-drag-handle')) { swTracking = 'skip'; return; }
     swStartX = e.touches[0].clientX;
     swStartY = e.touches[0].clientY;
     swTracking = null;
@@ -840,6 +873,7 @@ function createStepRow(text, idx) {
 
   row.addEventListener('touchmove', function(e) {
     if (e.touches.length !== 1) return;
+    if (swTracking === 'skip') return;
     var dx = e.touches[0].clientX - swStartX;
     var dy = e.touches[0].clientY - swStartY;
     if (!swTracking) {
@@ -928,6 +962,7 @@ function collectProcedure() {
 // Used to detect unsaved changes (e.g. deciding whether Back needs to confirm discarding).
 function collectFormSnapshot() {
   return JSON.stringify({
+    paste: ((document.getElementById('paste-input') || {}).value || '').trim(),
     name: ((document.getElementById('recipe-name') || {}).value || '').trim(),
     group: (document.getElementById('recipe-group') || {}).value || 'Sonstiges',
     defaultPortions: parseInt((document.getElementById('recipe-portions') || {}).value || '4', 10),

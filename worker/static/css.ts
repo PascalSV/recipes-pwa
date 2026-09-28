@@ -211,6 +211,9 @@ a.list-item:active{background:rgba(42,157,110,.12)}
 .ing-swipe-wrap.dragging{overflow:visible;z-index:20}
 .ing-swipe-wrap.dragging .ing-swipe-delete{opacity:0}
 .ing-swipe-wrap.dragging .ing-editor-row{box-shadow:var(--shadow);border-radius:var(--radius-xs);opacity:.97}
+.step-swipe-wrap.dragging{overflow:visible;z-index:20}
+.step-swipe-wrap.dragging .ing-swipe-delete{opacity:0}
+.step-swipe-wrap.dragging .step-row{box-shadow:var(--shadow);border-radius:var(--radius-xs);opacity:.97}
 .del-btn{width:32px;height:32px;border-radius:50%;background:transparent;color:var(--text-3);border:none;font-size:20px;display:flex;align-items:center;justify-content:center;transition:color .12s;flex-shrink:0}
 .del-btn:active{color:var(--danger)}
 .step-swipe-wrap{position:relative;overflow:hidden;border-bottom:1px solid var(--border-2)}

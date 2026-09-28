@@ -20,12 +20,10 @@ function recipePage({ lang, recipe }: { lang: Lang; recipe?: Recipe }): string {
   const title = isEdit ? t('edit.title', lang) : t('new.title', lang);
   const page  = isEdit ? 'edit' : 'new';
 
-  // On edit, Back also covers what a separate Cancel button used to do: if the form
-  // has unsaved changes it shows the discard-confirmation dialog, otherwise it just
-  // navigates back directly (see handleBack() in js.ts).
-  const navLeft = isEdit
-    ? `<button type="button" class="nav-btn nav-btn-icon" onclick="handleBack()" title="${esc(t('back', lang))}">${BACK_ICON}</button>`
-    : `<a href="/" class="nav-btn nav-btn-icon" title="${esc(t('back', lang))}">${BACK_ICON}</a>`;
+  // On both pages Back also covers what a separate Cancel button used to do: if the
+  // form has unsaved changes it shows the discard-confirmation dialog, otherwise it
+  // just navigates back directly (see handleBack() in js.ts).
+  const navLeft = `<button type="button" class="nav-btn nav-btn-icon" onclick="handleBack()" title="${esc(t('back', lang))}">${BACK_ICON}</button>`;
   const saveBtnHtml = `<button id="save-btn" type="button" class="nav-btn nav-btn-icon nav-btn-prominent${isEdit ? '' : ' hidden'}" onclick="handleSave()" title="${esc(t('new.save', lang))}">${SAVE_ICON}</button>`;
   const navRight = isEdit
     ? `<button type="button" class="nav-btn nav-btn-icon nav-btn-danger" onclick="handleDeleteRecipe()" title="${esc(t('delete', lang))}">${TRASH_ICON}</button>
