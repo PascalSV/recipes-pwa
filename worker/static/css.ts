@@ -200,7 +200,8 @@ a.list-item:active{background:rgba(42,157,110,.12)}
 .recipe-content>.ing-sub-label:first-child{border-top:none}
 .ing-swipe-wrap{position:relative;overflow:hidden;border-bottom:1px solid var(--border-2)}
 .ing-swipe-wrap:last-child{border-bottom:none}
-.ing-swipe-delete{position:absolute;right:0;top:0;bottom:0;width:80px;background:#ff3b30;color:#fff;border:none;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;letter-spacing:.01em}
+.ing-swipe-delete{position:absolute;top:50%;right:12px;transform:translateY(-50%);width:68px;height:36px;border-radius:100px;background:color-mix(in srgb,var(--danger) 78%,transparent);color:#fff;border:1.5px solid var(--glass-rim);font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;letter-spacing:.01em;backdrop-filter:blur(20px) saturate(180%);-webkit-backdrop-filter:blur(20px) saturate(180%);box-shadow:var(--shadow-s),inset 0 1.5px 0 var(--glass-sheen);transition:background .15s}
+.ing-swipe-delete:active{background:color-mix(in srgb,var(--danger) 55%,transparent)}
 .ing-editor-row{display:grid;grid-template-columns:18px 64px 70px 1fr;gap:6px;align-items:center;padding:10px 0;position:relative;z-index:1;background:var(--bg-card);will-change:transform}
 .ing-editor-row .input,.ing-editor-row .select{padding:9px 8px;font-size:15px}
 .ing-editor-row .select{padding-right:26px}
