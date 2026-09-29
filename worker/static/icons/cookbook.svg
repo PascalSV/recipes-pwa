@@ -1,40 +1,176 @@
-<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <clipPath id="coverClip">
-      <rect x="130" y="74" width="268" height="356" rx="16"/>
+    <linearGradient id="bg" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1CA873"/>
+      <stop offset="0.55" stop-color="#0F6C4C"/>
+      <stop offset="1" stop-color="#073528"/>
+    </linearGradient>
+    <radialGradient id="blobMint" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#9FF5C8" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#9FF5C8" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="blobTeal" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#3FD8C7" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#3FD8C7" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="blobWarm" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#F7DFA0" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#F7DFA0" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="vignette" cx="0.5" cy="0.42" r="0.75">
+      <stop offset="0.55" stop-color="#04231A" stop-opacity="0"/>
+      <stop offset="1" stop-color="#04231A" stop-opacity="0.45"/>
+    </radialGradient>
+    <linearGradient id="frost" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.52"/>
+      <stop offset="0.5" stop-color="#FFFFFF" stop-opacity="0.3"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.16"/>
+    </linearGradient>
+    <linearGradient id="rim" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.95"/>
+      <stop offset="0.6" stop-color="#FFFFFF" stop-opacity="0.38"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.6"/>
+    </linearGradient>
+    <linearGradient id="sheenTop" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="sheenBottom" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.3"/>
+    </linearGradient>
+    <linearGradient id="caustic" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#FFFFFF" stop-opacity="0.2"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="tool" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0E5A40"/>
+      <stop offset="1" stop-color="#04281C"/>
+    </linearGradient>
+    <linearGradient id="toolSheen" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="ribbon" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FBF0D7" stop-opacity="0.98"/>
+      <stop offset="1" stop-color="#E9CF9C" stop-opacity="0.92"/>
+    </linearGradient>
+
+    <filter id="blurBlob" x="-120%" y="-120%" width="340%" height="340%">
+      <feGaussianBlur stdDeviation="70"/>
+    </filter>
+    <filter id="blurRefract" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="30"/>
+    </filter>
+    <filter id="blurShadow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="22"/>
+    </filter>
+    <filter id="blurSoft" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="9"/>
+    </filter>
+    <filter id="blurMid" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="14"/>
+    </filter>
+    <filter id="blurTiny" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="2.5"/>
+    </filter>
+
+    <clipPath id="bookClip">
+      <rect x="100" y="70" width="312" height="372" rx="46"/>
+    </clipPath>
+    <clipPath id="bladeClip">
+      <path d="M210 112 L338 112 L358 232 L300 292 L248 292 L190 232 Z"/>
+    </clipPath>
+    <clipPath id="handleClip">
+      <rect x="254" y="272" width="40" height="136" rx="20"/>
     </clipPath>
   </defs>
 
-  <!-- background -->
-  <rect width="512" height="512" fill="#2A9D6E"/>
-
-  <!-- page block (peeks out on the right + bottom) -->
-  <rect x="140" y="86" width="272" height="356" rx="16" fill="#F2EFE6"/>
-  <rect x="140" y="86" width="272" height="356" rx="16" fill="#000000" opacity="0.06"/>
-  <line x1="404" y1="120" x2="404" y2="404" stroke="#123751" stroke-opacity="0.18" stroke-width="4"/>
-  <line x1="160" y1="430" x2="392" y2="430" stroke="#123751" stroke-opacity="0.14" stroke-width="4"/>
-
-  <!-- spine -->
-  <rect x="104" y="74" width="40" height="356" rx="16" fill="#0C2637"/>
-
-  <!-- cover face -->
-  <rect x="130" y="74" width="268" height="356" rx="16" fill="#123751"/>
-  <rect x="130" y="74" width="10" height="356" fill="#0C2637" opacity="0.55"/>
-
-  <!-- bookmark ribbon -->
-  <path d="M338 74 h34 v104 l-17 -16 -17 16 Z" fill="#F2EFE6"/>
-  <path d="M338 74 h34 v104 l-17 -16 -17 16 Z" fill="#000000" opacity="0.05"/>
-
-  <!-- spatula on the cover -->
-  <g clip-path="url(#coverClip)"
-     fill="#2A9D6E" stroke="#2A9D6E" stroke-width="16"
-     stroke-linejoin="round" stroke-linecap="round">
-    <polygon points="216,128 312,128 330,224 286,280 242,280 198,224"/>
-    <rect x="246" y="264" width="34" height="150" rx="17"/>
+  <!-- Background -->
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <g filter="url(#blurBlob)">
+    <ellipse cx="170" cy="128" rx="235" ry="205" fill="url(#blobMint)"/>
+    <ellipse cx="404" cy="412" rx="245" ry="215" fill="url(#blobTeal)"/>
+    <ellipse cx="424" cy="86" rx="195" ry="170" fill="url(#blobWarm)"/>
   </g>
-  <g clip-path="url(#coverClip)" stroke="#123751" stroke-width="12" stroke-linecap="round">
-    <line x1="264" y1="150" x2="264" y2="224"/>
-    <line x1="231" y1="160" x2="231" y2="210"/>
-    <line x1="297" y1="160" x2="297" y2="210"/>
+  <rect width="512" height="512" fill="url(#vignette)"/>
+
+  <!-- Glass bubbles -->
+  <g>
+    <circle cx="446" cy="152" r="22" fill="#FFFFFF" fill-opacity="0.1"/>
+    <circle cx="446" cy="152" r="21" stroke="#FFFFFF" stroke-opacity="0.55" stroke-width="2.5"/>
+    <circle cx="438" cy="143" r="6" fill="#FFFFFF" fill-opacity="0.8"/>
+    <circle cx="84" cy="394" r="13" fill="#FFFFFF" fill-opacity="0.08"/>
+    <circle cx="84" cy="394" r="12" stroke="#FFFFFF" stroke-opacity="0.4" stroke-width="2"/>
+    <circle cx="79" cy="389" r="4" fill="#FFFFFF" fill-opacity="0.7"/>
+    <circle cx="452" cy="330" r="9" fill="#FFFFFF" fill-opacity="0.1"/>
+    <circle cx="452" cy="330" r="8" stroke="#FFFFFF" stroke-opacity="0.45" stroke-width="2"/>
+    <circle cx="448" cy="326" r="3.5" fill="#FFFFFF" fill-opacity="0.7"/>
   </g>
+
+  <!-- Book drop shadow -->
+  <rect x="100" y="86" width="312" height="372" rx="46" fill="#02160E" fill-opacity="0.35" filter="url(#blurShadow)"/>
+
+  <!-- Refracted background seen through the glass -->
+  <g clip-path="url(#bookClip)">
+    <rect width="512" height="512" fill="url(#bg)"/>
+    <g filter="url(#blurRefract)">
+      <ellipse cx="170" cy="128" rx="235" ry="205" fill="url(#blobMint)" opacity="0.9"/>
+      <ellipse cx="404" cy="412" rx="245" ry="215" fill="url(#blobTeal)" opacity="0.9"/>
+      <ellipse cx="424" cy="86" rx="195" ry="170" fill="url(#blobWarm)" opacity="0.9"/>
+    </g>
+    <rect width="512" height="512" fill="url(#vignette)"/>
+  </g>
+
+  <!-- Frosted glass body -->
+  <rect x="100" y="70" width="312" height="372" rx="46" fill="url(#frost)"/>
+
+  <!-- Spine shading + gutter -->
+  <g clip-path="url(#bookClip)">
+    <rect x="100" y="70" width="64" height="372" fill="#06301F" fill-opacity="0.18"/>
+    <line x1="164" y1="86" x2="164" y2="426" stroke="#052E21" stroke-opacity="0.35" stroke-width="3"/>
+    <line x1="168" y1="90" x2="168" y2="422" stroke="#FFFFFF" stroke-opacity="0.5" stroke-width="2"/>
+  </g>
+
+  <!-- Bookmark ribbon -->
+  <g clip-path="url(#bookClip)">
+    <path d="M352 70 h38 v118 l-19 -16 l-19 16 z" transform="translate(5 9)" fill="#032018" fill-opacity="0.22" filter="url(#blurSoft)"/>
+  </g>
+  <path d="M352 70 h38 v118 l-19 -16 l-19 16 z" fill="url(#ribbon)"/>
+  <path d="M352 70 h38" stroke="#FFFFFF" stroke-opacity="0.85" stroke-width="2.5" stroke-linecap="round" filter="url(#blurTiny)"/>
+
+  <!-- Spatula shadow on the glass -->
+  <g clip-path="url(#bookClip)" transform="translate(9 13)">
+    <path d="M210 112 L338 112 L358 232 L300 292 L248 292 L190 232 Z" fill="#032018" fill-opacity="0.28" stroke="#032018" stroke-opacity="0.28" stroke-width="18" stroke-linejoin="round" filter="url(#blurSoft)"/>
+    <rect x="254" y="272" width="40" height="136" rx="20" fill="#032018" fill-opacity="0.28" filter="url(#blurSoft)"/>
+  </g>
+
+  <!-- Spatula -->
+  <g>
+    <path d="M210 112 L338 112 L358 232 L300 292 L248 292 L190 232 Z" fill="url(#tool)" stroke="url(#tool)" stroke-width="18" stroke-linejoin="round"/>
+    <rect x="254" y="272" width="40" height="136" rx="20" fill="url(#tool)"/>
+    <rect x="266" y="136" width="16" height="88" rx="8" fill="#FFFFFF" fill-opacity="0.38"/>
+    <rect x="228" y="148" width="14" height="64" rx="7" fill="#FFFFFF" fill-opacity="0.34"/>
+    <rect x="306" y="148" width="14" height="64" rx="7" fill="#FFFFFF" fill-opacity="0.34"/>
+    <g clip-path="url(#bladeClip)">
+      <rect x="182" y="104" width="184" height="72" fill="url(#toolSheen)" filter="url(#blurSoft)"/>
+      <line x1="216" y1="108" x2="332" y2="108" stroke="#FFFFFF" stroke-opacity="0.5" stroke-width="5" stroke-linecap="round" filter="url(#blurTiny)"/>
+    </g>
+    <g clip-path="url(#handleClip)">
+      <rect x="258" y="278" width="11" height="120" rx="5.5" fill="#FFFFFF" fill-opacity="0.28" filter="url(#blurTiny)"/>
+    </g>
+  </g>
+
+  <!-- Glass sheens -->
+  <g clip-path="url(#bookClip)">
+    <rect x="100" y="70" width="312" height="84" fill="url(#sheenTop)" opacity="0.55" filter="url(#blurMid)"/>
+    <rect x="-24" y="204" width="560" height="92" fill="url(#caustic)" filter="url(#blurMid)" transform="rotate(-22 256 250)" opacity="0.85"/>
+    <rect x="100" y="378" width="312" height="64" fill="url(#sheenBottom)" filter="url(#blurSoft)"/>
+    <ellipse cx="152" cy="88" rx="26" ry="9" fill="#FFFFFF" fill-opacity="0.5" filter="url(#blurTiny)" transform="rotate(-18 152 88)"/>
+  </g>
+
+  <!-- Rim light -->
+  <rect x="100" y="70" width="312" height="372" rx="46" stroke="url(#rim)" stroke-width="3.5"/>
+  <rect x="104.5" y="74.5" width="303" height="363" rx="41.5" stroke="#FFFFFF" stroke-opacity="0.25" stroke-width="1.5"/>
 </svg>
