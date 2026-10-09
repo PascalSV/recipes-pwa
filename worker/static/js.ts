@@ -122,23 +122,26 @@ function isJsonWs(c) {
   return c === ' ' || n === 9 || n === 10 || n === 13;
 }
 
-// A "}" that would close the top-level object but is followed by , "key" is a
-// premature close (the model "finished" the object, then kept adding members).
-function isPrematureTopLevelClose(text, closeIdx) {
-  var j = closeIdx + 1;
-  while (j < text.length && isJsonWs(text.charAt(j))) j++;
-  if (j >= text.length || text.charAt(j) !== ',') return false;
-  j++;
-  while (j < text.length && isJsonWs(text.charAt(j))) j++;
-  return j < text.length && text.charAt(j) === '"';
+// True when, after idx, real content (anything but whitespace or a lone comma)
+// still remains. Used to tell a premature top-level "}" (more members follow)
+// from the genuine final close (nothing follows).
+function hasMoreLlmContent(text, idx) {
+  for (var i = idx; i < text.length; i++) {
+    var c = text.charAt(i);
+    if (isJsonWs(c) || c === ',') continue;
+    return true;
+  }
+  return false;
 }
 
-// One string-aware repair pass: drops premature top-level closes and trailing
-// commas. Run repeatedly until a fixed point (one pass fixes one premature
-// close, so multi-close payloads need several rounds).
+// One string-aware repair pass that reconciles the bracket structure. It drops
+// extra or mismatched closers (the model sometimes double-closes an object with
+// "}}"), drops a top-level "}" that is closed prematurely but followed by more
+// members, drops trailing commas, and appends any closers the model left open.
+// Valid JSON passes through unchanged, so the pass is idempotent.
 function repairLlmJsonPass(text) {
   var out = '';
-  var depth = 0;
+  var stack = [];
   var inStr = false;
   var esc = false;
   for (var i = 0; i < text.length; i++) {
@@ -151,19 +154,26 @@ function repairLlmJsonPass(text) {
       continue;
     }
     if (c === '"') { inStr = true; out += c; continue; }
-    if (c === '{') { depth++; out += c; continue; }
-    if (c === '}') {
-      depth--;
-      if (depth === 0 && isPrematureTopLevelClose(text, i)) continue;
+    if (c === '{' || c === '[') { stack.push(c); out += c; continue; }
+    if (c === '}' || c === ']') {
+      var top = stack.length ? stack[stack.length - 1] : '';
+      var matches = (c === '}' && top === '{') || (c === ']' && top === '[');
+      if (!matches) continue; // extra or mismatched closer -> drop
+      if (stack.length === 1 && hasMoreLlmContent(text, i + 1)) continue; // premature top-level close -> drop
+      stack.pop();
       out += c;
       continue;
     }
     if (c === ',') {
       var j = i + 1;
       while (j < text.length && isJsonWs(text.charAt(j))) j++;
-      if (j < text.length && (text.charAt(j) === '}' || text.charAt(j) === ']')) continue;
+      if (j < text.length && (text.charAt(j) === '}' || text.charAt(j) === ']')) continue; // trailing comma -> drop
     }
     out += c;
+  }
+  while (stack.length) {
+    var open = stack.pop();
+    out += open === '{' ? '}' : ']';
   }
   return out;
 }

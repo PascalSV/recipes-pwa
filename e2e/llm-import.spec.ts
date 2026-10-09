@@ -77,6 +77,15 @@ const MALFORMED_AVOCADO =
   '  ]\n' +
   '}';
 
+// Real extraction output from Private LLM (a second Avocado-Carbonara run). This time the
+// model double-closed three ingredient objects — each ends with "}}" instead of "}" (Sahne,
+// Zitrone, Parmesankäse). That is 3 stray "}" (13 "}" vs 10 "{") so the raw text is NOT valid
+// JSON, and it is a DIFFERENT malformation than MALFORMED_AVOCADO: the extra closers sit inside
+// the ingredients array rather than a premature top-level close. It must be repaired (drop the
+// 3 extra closers) and imported best-effort (9 ingredients, 9 steps).
+const MALFORMED_AVOCADO_EXTRA_BRACES =
+  '{"name":"Avocado-Carbonara","defaultPortions":2,"cookingTime":30,"ingredients":[{"amount":1,"unit":"piece","name":"Avocado","remark":""},{"amount":1,"unit":"piece","name":"Eigelb","remark":""},{"amount":0.5,"unit":"tbsp","name":"Sahne","remark":"(120 ml)"}},{"amount":1,"unit":"piece","name":"Knoblauchzehe","remark":""},{"amount":0.5,"unit":"cup","name":"Zitrone","remark":"Saft"}},{"amount":0.5,"unit":"cup","name":"Parmesankäse","remark":"(55 g), gerieben"}},{"amount":3,"unit":"piece","name":"Speck","remark":"Streifen"},{"amount":0.5,"unit":"lb","name":"Spaghetti","remark":"(225 g)"},{"amount":1,"unit":"tbsp","name":"Olivenöl","remark":""}],"procedure":["Avocado halbieren und den Kern entfernen.","Eigelb mit der Sahne verquirlen, bis die Masse cremig ist.","Knoblauch fein reiben und zusammen mit dem Zitronensaft unterrühren.","Speckstreifen in einer Pfanne knusprig auslassen.","Spaghetti in Salzwasser al dente kochen.","Parmesankäse unter die Sahne-Mischung rühren, bis sie geschmeidig ist.","Pasta mit der Soße und dem Avocado vermengen.","Mit Salz und Pfeffer abschmecken.","Sofort servieren, gerne mit etwas mehr Parmesankäse."]}';
+
 function assertNoErrors(pageErrors: string[]) {
   expect(pageErrors, `Unexpected JS errors: ${pageErrors.join('\n')}`).toEqual([]);
 }
@@ -212,6 +221,26 @@ test.describe('LLM import — URL hand-off (short recipes)', () => {
     await expect(page.locator('#recipe-time')).toHaveValue('30');
     await expect(page.locator('#recipe-portions')).toHaveValue('2');
     await expect(page.locator('.ing-editor-row')).toHaveCount(17);
+    const stepCount = await page.locator('#steps-list').evaluate((el) => el.children.length);
+    expect(stepCount).toBe(9);
+    assertNoErrors(pageErrors);
+  });
+
+  // Regression: the model double-closes ingredient objects ("}}") inside the ingredients
+  // array. The lenient parser must drop the extra closers and import the recipe, not fail.
+  test('malformed llmResult (extra "}}" closers inside ingredients) is repaired and imported', async ({ page }) => {
+    const pageErrors: string[] = [];
+    page.on('pageerror', (err) => pageErrors.push(err.message));
+
+    await login(page);
+    await page.goto('/recipe/new?llmResult=' + encodeURIComponent(MALFORMED_AVOCADO_EXTRA_BRACES));
+
+    await expect(page.locator('#form-phase')).toBeVisible();
+    await expect(page.locator('#parse-error')).toBeHidden();
+    await expect(page.locator('#recipe-name')).toHaveValue('Avocado-Carbonara');
+    await expect(page.locator('#recipe-time')).toHaveValue('30');
+    await expect(page.locator('#recipe-portions')).toHaveValue('2');
+    await expect(page.locator('.ing-editor-row')).toHaveCount(9);
     const stepCount = await page.locator('#steps-list').evaluate((el) => el.children.length);
     expect(stepCount).toBe(9);
     assertNoErrors(pageErrors);
