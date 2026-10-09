@@ -31,6 +31,52 @@ const KARDAMOMKUCHEN = {
   ],
 };
 
+// Real extraction output from Private LLM for the Avocado-Carbonara recipe. The model
+// closed the top-level object prematurely (a stray "}" after "soeders"), then kept adding
+// "procedure" — so the raw text is NOT valid JSON. It also invented a "soeders" field and
+// emitted numeric units. This exact payload previously made JSON.parse throw and the whole
+// import crash; it must now be repaired and imported best-effort (17 ingredients, 9 steps).
+const MALFORMED_AVOCADO =
+  '{\n' +
+  '  "name": "Avocado-Carbonara",\n' +
+  '  "defaultPortions": 2,\n' +
+  '  "cookingTime": 30,\n' +
+  '  "ingredients": [\n' +
+  '    { "amount": 1, "unit": 1, "name": "Avocado" },\n' +
+  '    { "amount": 1, "unit": 1 },\n' +
+  '    { "amount": 0.5, "unit": "Tasse", "name": "Sahne", "remark": "120 ml" },\n' +
+  '    { "amount": 1, "unit": "piece", "name": "Knoblauchzehe" },\n' +
+  '    { "amount": 0.5, "unit": "piece", "name": "Zitrone", "remark": "Saft" },\n' +
+  '    { "amount": 0.5, "unit": "Tasse", "name": "Parmesankäse", "remark": "55 g, gerieben" },\n' +
+  '    { "amount": 3, "unit": "piece", "name": "Speck", "remark": "Streifen" },\n' +
+  '    { "amount": 0.5, "unit": "lb", "name": "Spaghetti", "remark": "225 g" },\n' +
+  '    { "amount": 1, "unit": "EL", "name": "Olivenöl" }\n' +
+  '  ],\n' +
+  '  "soeders": [\n' +
+  '    { "amount": 1, "unit": 1, "name": "Salz" },\n' +
+  '    { "amount": 1, "unit": 1, "name": "Pfeffer" },\n' +
+  '    { "amount": 1, "unit": 1, "name": "Crème fraîche" },\n' +
+  '    { "amount": 1, "unit": 1, "name": "Ei" },\n' +
+  '    { "amount": 1, "unit": 1, "name": "Parmesankäse" },\n' +
+  '    { "amount": 1, "unit": 1, "name": "Avocado" },\n' +
+  '    { "amount": 1, "unit": 1, "name": "Sahne" },\n' +
+  '    { "amount": 1, "unit": 1, "name": "Zitrone" }\n' +
+  '  ]\n' +
+  '  }\n' +
+  '  ,\n' +
+  '  "procedure": [\n' +
+  '    "Avocado halbieren, entkernen und in Spalten schneiden.",\n' +
+  '    "Knoblauch schälen und fein hacken.",\n' +
+  '    "Speck in Streifen schneiden und in Olivenöl ausbraten.",\n' +
+  '    "Knoblauch kurz mitbraten, Sahne und Eigelb zugeben und cremig rühren.",\n' +
+  '    "Parmesankäse, Zitronensaft, Salz und Pfeffer unterrühren.",\n' +
+  '    "Spaghetti in Salzwasser bissfest kochen.",\n' +
+  '    "Nudeln abgießen, ein wenig Kochwasser aufheben.",\n' +
+  '    "Nudeln, Avocado und Soße vermengen und mit Kochwasser binden.",\n' +
+  '    "Anrichten und mit restlichem Parmesankäse bestreuen."\n' +
+  '  ]\n' +
+  '}';
+
 function assertNoErrors(pageErrors: string[]) {
   expect(pageErrors, `Unexpected JS errors: ${pageErrors.join('\n')}`).toEqual([]);
 }
@@ -115,6 +161,27 @@ test.describe('LLM import — clipboard hand-off (Private LLM Shortcut)', () => 
     await expect(page.locator('#form-phase')).toBeHidden();
     assertNoErrors(pageErrors);
   });
+
+  // The Avocado-Carbonara payload is long enough that Shortcuts would hand it back via the
+  // clipboard rather than the URL — so the premature-close repair must work on this path too.
+  test('malformed clipboard JSON (premature top-level close) is repaired and imported', async ({ page, context, baseURL, browserName }) => {
+    const clipPerms = browserName === 'webkit' ? ['clipboard-read'] : ['clipboard-read', 'clipboard-write'];
+    await context.grantPermissions(clipPerms, { origin: baseURL });
+    const pageErrors: string[] = [];
+    page.on('pageerror', (err) => pageErrors.push(err.message));
+
+    await login(page);
+    await page.goto('/recipe/new?fromClipboard=1');
+    await page.bringToFront();
+    await page.evaluate((json) => navigator.clipboard.writeText(json), MALFORMED_AVOCADO);
+    await page.click('#paste-clipboard-btn');
+
+    await expect(page.locator('#form-phase')).toBeVisible();
+    await expect(page.locator('#parse-error')).toBeHidden();
+    await expect(page.locator('#recipe-name')).toHaveValue('Avocado-Carbonara');
+    await expect(page.locator('.ing-editor-row')).toHaveCount(17);
+    assertNoErrors(pageErrors);
+  });
 });
 
 test.describe('LLM import — URL hand-off (short recipes)', () => {
@@ -129,6 +196,52 @@ test.describe('LLM import — URL hand-off (short recipes)', () => {
     await expect(page.locator('#form-phase')).toBeVisible();
     await expect(page.locator('#recipe-name')).toHaveValue('Kardamomkuchen');
     await expect(page.locator('.ing-editor-row')).toHaveCount(9);
+    assertNoErrors(pageErrors);
+  });
+
+  test('malformed llmResult (premature top-level close) is repaired and imported', async ({ page }) => {
+    const pageErrors: string[] = [];
+    page.on('pageerror', (err) => pageErrors.push(err.message));
+
+    await login(page);
+    await page.goto('/recipe/new?llmResult=' + encodeURIComponent(MALFORMED_AVOCADO));
+
+    await expect(page.locator('#form-phase')).toBeVisible();
+    await expect(page.locator('#parse-error')).toBeHidden();
+    await expect(page.locator('#recipe-name')).toHaveValue('Avocado-Carbonara');
+    await expect(page.locator('#recipe-time')).toHaveValue('30');
+    await expect(page.locator('#recipe-portions')).toHaveValue('2');
+    await expect(page.locator('.ing-editor-row')).toHaveCount(17);
+    const stepCount = await page.locator('#steps-list').evaluate((el) => el.children.length);
+    expect(stepCount).toBe(9);
+    assertNoErrors(pageErrors);
+  });
+
+  test('llmResult wrapped in a markdown fence is unwrapped and imported', async ({ page }) => {
+    const pageErrors: string[] = [];
+    page.on('pageerror', (err) => pageErrors.push(err.message));
+
+    await login(page);
+    const fenced = '```json\n' + JSON.stringify(KARDAMOMKUCHEN) + '\n```';
+    await page.goto('/recipe/new?llmResult=' + encodeURIComponent(fenced));
+
+    await expect(page.locator('#form-phase')).toBeVisible();
+    await expect(page.locator('#parse-error')).toBeHidden();
+    await expect(page.locator('#recipe-name')).toHaveValue('Kardamomkuchen');
+    await expect(page.locator('.ing-editor-row')).toHaveCount(9);
+    assertNoErrors(pageErrors);
+  });
+
+  test('valid JSON that is not a recipe shows the not-a-recipe error, not a crash', async ({ page }) => {
+    const pageErrors: string[] = [];
+    page.on('pageerror', (err) => pageErrors.push(err.message));
+
+    await login(page);
+    await page.goto('/recipe/new?llmResult=' + encodeURIComponent('{"foo": 1}'));
+
+    await expect(page.locator('#parse-error')).toBeVisible();
+    await expect(page.locator('#parse-error')).toContainText('kein erkennbares Rezept');
+    await expect(page.locator('#form-phase')).toBeHidden();
     assertNoErrors(pageErrors);
   });
 });

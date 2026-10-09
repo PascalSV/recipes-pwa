@@ -5,8 +5,8 @@ export const JS = `
 // ---- Language ----
 var _lang = document.body.dataset.lang || 'de';
 var _T = {
-  de: { amount:'Menge', ingredient:'Zutat', describe_step:'Schritt beschreiben…', offline:'Offline gespeichert – wird synchronisiert', copied:'In Zwischenablage kopiert', share_fail:'Teilen fehlgeschlagen', portions:'Portionen', portion:'Portion', save:'Speichern', extract:'Extrahieren', add_ingredient:'Zutat hinzufügen', share:'Teilen', copy_link:'Link kopieren', print:'Drucken', cancel:'Abbrechen', llm_bad_json:'Private LLM hat kein gültiges JSON geliefert. Bitte erneut versuchen.', clipboard_fail:'Zwischenablage konnte nicht gelesen werden. Bitte Berechtigung erteilen und erneut versuchen.', discard_title:'Änderungen verwerfen?', discard_msg:'Alle nicht gespeicherten Änderungen gehen verloren.', discard_confirm:'Verwerfen', delete_title:'Rezept löschen?', delete_msg:'Diese Aktion kann nicht rückgängig gemacht werden.', delete_confirm:'Löschen', delete_error:'Fehler beim Löschen', delete_row:'Löschen' },
-  en: { amount:'Amount', ingredient:'Ingredient', describe_step:'Describe step…', offline:'Saved offline – will sync', copied:'Copied to clipboard', share_fail:'Sharing failed', portions:'Portions', portion:'Portion', save:'Save', extract:'Extract', add_ingredient:'Add ingredient', share:'Share', copy_link:'Copy link', print:'Print', cancel:'Cancel', llm_bad_json:'Private LLM did not return valid JSON. Please try again.', clipboard_fail:'Could not read the clipboard. Please grant permission and try again.', discard_title:'Discard changes?', discard_msg:'All unsaved changes will be lost.', discard_confirm:'Discard', delete_title:'Delete recipe?', delete_msg:'This action cannot be undone.', delete_confirm:'Delete', delete_error:'Error deleting', delete_row:'Delete' }
+  de: { amount:'Menge', ingredient:'Zutat', describe_step:'Schritt beschreiben…', offline:'Offline gespeichert – wird synchronisiert', copied:'In Zwischenablage kopiert', share_fail:'Teilen fehlgeschlagen', portions:'Portionen', portion:'Portion', save:'Speichern', extract:'Extrahieren', add_ingredient:'Zutat hinzufügen', share:'Teilen', copy_link:'Link kopieren', print:'Drucken', cancel:'Abbrechen', llm_bad_json:'Private LLM hat kein gültiges JSON geliefert. Bitte erneut versuchen.', llm_not_recipe:'Private LLM hat kein erkennbares Rezept geliefert. Bitte erneut versuchen.', clipboard_fail:'Zwischenablage konnte nicht gelesen werden. Bitte Berechtigung erteilen und erneut versuchen.', discard_title:'Änderungen verwerfen?', discard_msg:'Alle nicht gespeicherten Änderungen gehen verloren.', discard_confirm:'Verwerfen', delete_title:'Rezept löschen?', delete_msg:'Diese Aktion kann nicht rückgängig gemacht werden.', delete_confirm:'Löschen', delete_error:'Fehler beim Löschen', delete_row:'Löschen' },
+  en: { amount:'Amount', ingredient:'Ingredient', describe_step:'Describe step…', offline:'Saved offline – will sync', copied:'Copied to clipboard', share_fail:'Sharing failed', portions:'Portions', portion:'Portion', save:'Save', extract:'Extract', add_ingredient:'Add ingredient', share:'Share', copy_link:'Copy link', print:'Print', cancel:'Cancel', llm_bad_json:'Private LLM did not return valid JSON. Please try again.', llm_not_recipe:'Private LLM did not return a usable recipe. Please try again.', clipboard_fail:'Could not read the clipboard. Please grant permission and try again.', discard_title:'Discard changes?', discard_msg:'All unsaved changes will be lost.', discard_confirm:'Discard', delete_title:'Delete recipe?', delete_msg:'This action cannot be undone.', delete_confirm:'Delete', delete_error:'Error deleting', delete_row:'Delete' }
 };
 function jst(key) { return (_T[_lang] || _T.de)[key] || key; }
 
@@ -110,6 +110,182 @@ if (document.body.dataset.page !== 'login' && !localStorage.getItem('token')) {
 // in the URL), which runs before the script would reach a later var declaration.
 var UNITS = ['', 'g', 'kg', 'ml', 'l', 'tbsp', 'tsp', 'cup', 'piece', 'pck', 'prise', 'bunch', 'can'];
 var UNIT_LABELS = { '': '—', g: 'g', kg: 'kg', ml: 'ml', l: 'l', tbsp: 'EL', tsp: 'TL', cup: 'Tasse', piece: 'Stk', pck: 'Päck.', prise: 'Prise', bunch: 'Bd.', can: 'Dose' };
+
+// ---- Lenient LLM result parsing ----
+// The Private LLM occasionally returns broken or off-schema JSON (markdown
+// fences, a top-level object closed prematurely, trailing commas, numeric
+// units, made-up ingredient fields, missing names). Repair what we can and
+// normalize the rest; only fail when nothing usable remains.
+
+function isJsonWs(c) {
+  var n = c.charCodeAt(0);
+  return c === ' ' || n === 9 || n === 10 || n === 13;
+}
+
+// A "}" that would close the top-level object but is followed by , "key" is a
+// premature close (the model "finished" the object, then kept adding members).
+function isPrematureTopLevelClose(text, closeIdx) {
+  var j = closeIdx + 1;
+  while (j < text.length && isJsonWs(text.charAt(j))) j++;
+  if (j >= text.length || text.charAt(j) !== ',') return false;
+  j++;
+  while (j < text.length && isJsonWs(text.charAt(j))) j++;
+  return j < text.length && text.charAt(j) === '"';
+}
+
+// One string-aware repair pass: drops premature top-level closes and trailing
+// commas. Run repeatedly until a fixed point (one pass fixes one premature
+// close, so multi-close payloads need several rounds).
+function repairLlmJsonPass(text) {
+  var out = '';
+  var depth = 0;
+  var inStr = false;
+  var esc = false;
+  for (var i = 0; i < text.length; i++) {
+    var c = text.charAt(i);
+    if (inStr) {
+      out += c;
+      if (esc) esc = false;
+      else if (c.charCodeAt(0) === 92) esc = true;
+      else if (c === '"') inStr = false;
+      continue;
+    }
+    if (c === '"') { inStr = true; out += c; continue; }
+    if (c === '{') { depth++; out += c; continue; }
+    if (c === '}') {
+      depth--;
+      if (depth === 0 && isPrematureTopLevelClose(text, i)) continue;
+      out += c;
+      continue;
+    }
+    if (c === ',') {
+      var j = i + 1;
+      while (j < text.length && isJsonWs(text.charAt(j))) j++;
+      if (j < text.length && (text.charAt(j) === '}' || text.charAt(j) === ']')) continue;
+    }
+    out += c;
+  }
+  return out;
+}
+
+function cleanLlmText(rawText) {
+  var text = String(rawText == null ? '' : rawText).trim();
+  if (!text) return '';
+  var fence = String.fromCharCode(96) + String.fromCharCode(96) + String.fromCharCode(96);
+  if (text.indexOf(fence) === 0) {
+    var close = text.lastIndexOf(fence);
+    if (close > 3) {
+      var inner = text.slice(3, close).trim();
+      if (inner) text = inner;
+    }
+  }
+  var start = text.indexOf('{');
+  var end = text.lastIndexOf('}');
+  if (start === -1 || end <= start) return text;
+  return text.slice(start, end + 1);
+}
+
+// Returns the parsed object, or null if no JSON could be recovered.
+function parseLlmJson(rawText) {
+  var text = cleanLlmText(rawText);
+  if (!text) return null;
+  var repaired = text;
+  for (var round = 0; round < 8; round++) {
+    var next = repairLlmJsonPass(repaired);
+    if (next === repaired) break;
+    repaired = next;
+  }
+  var candidates = repaired === text ? [text] : [text, repaired];
+  for (var i = 0; i < candidates.length; i++) {
+    try { return JSON.parse(candidates[i]); } catch (e) { /* try next */ }
+  }
+  return null;
+}
+
+function toFiniteNumber(v) {
+  if (typeof v === 'number' && isFinite(v)) return v;
+  if (typeof v === 'string') {
+    var n = parseFloat(v.replace(',', '.'));
+    if (isFinite(n)) return n;
+  }
+  return 0;
+}
+
+function normalizeIngredient(raw) {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  var amount = toFiniteNumber(raw.amount);
+  var unit = raw.unit == null ? '' : String(raw.unit);
+  var name = raw.name == null ? '' : String(raw.name);
+  var remark = raw.remark == null ? '' : String(raw.remark);
+  if (!name && !remark && !unit && amount <= 0) return null;
+  return { amount: amount, unit: unit, name: name, remark: remark };
+}
+
+function looksLikeIngredientList(arr) {
+  if (!Array.isArray(arr) || arr.length === 0) return false;
+  var count = 0;
+  for (var i = 0; i < arr.length; i++) {
+    var v = arr[i];
+    if (v && typeof v === 'object' && !Array.isArray(v) &&
+        ('amount' in v || 'unit' in v || 'name' in v || 'remark' in v)) count++;
+  }
+  return count * 2 > arr.length;
+}
+
+// Maps any recognized LLM output shape onto the app's Recipe shape. Always
+// emits ingredientSections (populateForm ignores bare ingredients when
+// sections exist) and returns null when nothing usable was found.
+function normalizeLlmRecipe(data) {
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return null;
+
+  var recipe = {
+    name: data.name == null ? '' : String(data.name),
+    defaultPortions: toFiniteNumber(data.defaultPortions),
+    cookingTime: toFiniteNumber(data.cookingTime),
+    ingredientSections: [],
+    procedure: []
+  };
+  if (data.group != null && String(data.group).trim()) {
+    recipe.group = String(data.group).trim();
+  }
+
+  var known = { name: 1, group: 1, defaultPortions: 1, cookingTime: 1, ingredients: 1, ingredientSections: 1, procedure: 1 };
+  var pools = []; // [sectionName, ingredientArray]
+  if (Array.isArray(data.ingredientSections)) {
+    for (var s = 0; s < data.ingredientSections.length; s++) {
+      var sec = data.ingredientSections[s];
+      if (sec && typeof sec === 'object' && Array.isArray(sec.ingredients)) {
+        pools.push([sec.name == null ? '' : String(sec.name), sec.ingredients]);
+      }
+    }
+  }
+  if (Array.isArray(data.ingredients)) pools.push(['', data.ingredients]);
+  Object.keys(data).forEach(function (key) {
+    if (known[key]) return;
+    if (looksLikeIngredientList(data[key])) {
+      pools.push([key.charAt(0).toUpperCase() + key.slice(1), data[key]]);
+    }
+  });
+
+  pools.forEach(function (pool) {
+    var ings = [];
+    pool[1].forEach(function (raw) {
+      var ing = normalizeIngredient(raw);
+      if (ing) ings.push(ing);
+    });
+    if (ings.length) recipe.ingredientSections.push({ name: pool[0], ingredients: ings });
+  });
+
+  if (Array.isArray(data.procedure)) {
+    data.procedure.forEach(function (step) {
+      var t = String(step == null ? '' : step).trim();
+      if (t) recipe.procedure.push(t);
+    });
+  }
+
+  if (!recipe.name && !recipe.ingredientSections.length && !recipe.procedure.length) return null;
+  return recipe;
+}
 
 // ---- Page router ----
 const page = document.body.dataset.page;
@@ -288,33 +464,36 @@ function initNew() {
     }
   };
 
-  // Shared by both hand-off paths below: parse the extracted-recipe JSON and
-  // skip straight to the form, or show what actually came back if it's not valid JSON.
+  // Shared by both hand-off paths below: leniently parse the extracted-recipe
+  // JSON, normalize it onto the app's shape, and skip straight to the form — or
+  // show what actually came back if nothing usable could be recovered.
   function applyLlmResult(rawText, errEl) {
-    try {
-      parsedData = JSON.parse(rawText);
-      // Only clean the URL once we've actually succeeded — keeping ?llmResult=/?fromClipboard=1
-      // in the address bar until then means that if iOS reclaims this backgrounded tab while
-      // you're switching between Shortcuts/Private LLM and back, the reload still lands here
-      // instead of silently dropping back to the plain paste screen.
-      history.replaceState(null, '', location.pathname);
-      var paste0 = document.getElementById('paste-phase');
-      var clipPhase0 = document.getElementById('clipboard-phase');
-      var form0  = document.getElementById('form-phase');
-      var saveBtn0 = document.getElementById('save-btn');
-      if (paste0) paste0.classList.add('hidden');
-      if (clipPhase0) clipPhase0.classList.add('hidden');
-      if (form0)  form0.classList.remove('hidden');
-      if (saveBtn0) saveBtn0.classList.remove('hidden');
-      populateForm(parsedData);
-    } catch (e) {
-      console.error('llmResult parse failed:', e, rawText);
+    var parsed = parseLlmJson(rawText);
+    var recipe = parsed ? normalizeLlmRecipe(parsed) : null;
+    if (!recipe) {
+      console.error('llmResult not usable, raw:', rawText);
       if (errEl) {
-        errEl.textContent = jst('llm_bad_json') + ' — ' + (e && e.message ? e.message : '') +
-          ' | ' + String(rawText).slice(0, 400);
+        errEl.textContent = (parsed ? jst('llm_not_recipe') : jst('llm_bad_json')) +
+          ' — ' + String(rawText).slice(0, 400);
         errEl.classList.remove('hidden');
       }
+      return;
     }
+    parsedData = recipe;
+    // Only clean the URL once we've actually succeeded — keeping ?llmResult=/?fromClipboard=1
+    // in the address bar until then means that if iOS reclaims this backgrounded tab while
+    // you're switching between Shortcuts/Private LLM and back, the reload still lands here
+    // instead of silently dropping back to the plain paste screen.
+    history.replaceState(null, '', location.pathname);
+    var paste0 = document.getElementById('paste-phase');
+    var clipPhase0 = document.getElementById('clipboard-phase');
+    var form0  = document.getElementById('form-phase');
+    var saveBtn0 = document.getElementById('save-btn');
+    if (paste0) paste0.classList.add('hidden');
+    if (clipPhase0) clipPhase0.classList.add('hidden');
+    if (form0)  form0.classList.remove('hidden');
+    if (saveBtn0) saveBtn0.classList.remove('hidden');
+    populateForm(recipe);
   }
 
   // Private LLM (via Shortcuts) redirects back here with the extracted recipe
