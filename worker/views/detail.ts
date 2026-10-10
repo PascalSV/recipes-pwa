@@ -42,11 +42,31 @@ function renderIngredientRow(ing: Ingredient): string {
   </div>`;
 }
 
+function recipePdfData(recipe: Recipe): string {
+  const item = (i: Ingredient) => ({
+    amount: i.amount,
+    unit: i.unit ?? null,
+    name: i.name,
+    remark: i.remark ?? null,
+  });
+  const data = {
+    name: recipe.name,
+    portions: recipe.defaultPortions,
+    time: recipe.cookingTime ? formatCookingTime(recipe.cookingTime) : null,
+    sections:
+      recipe.ingredientSections && recipe.ingredientSections.length > 0
+        ? recipe.ingredientSections.map((s) => ({ name: s.name ?? null, items: s.ingredients.map(item) }))
+        : [{ name: null, items: recipe.ingredients.map(item) }],
+    steps: recipe.procedure,
+  };
+  return JSON.stringify(data).replace(/</g, '\\u003c');
+}
+
 export function detailPage(recipe: Recipe, lang: Lang): string {
   const navLeft  = `<a href="/" class="nav-btn nav-btn-icon" title="${esc(t('back', lang))}">${BACK_ICON}</a>`;
   const navRight = `
     <a href="/recipe/${esc(recipe.id)}/edit" class="nav-btn nav-btn-icon" title="${esc(t('edit.title', lang))}">${EDIT_ICON}</a>
-    <button type="button" class="nav-btn nav-btn-icon" onclick="shareRecipe()" title="${esc(t('share', lang))}">${SHARE_ICON}</button>`;
+    <button type="button" class="nav-btn nav-btn-icon" onclick="shareRecipePdf()" title="${esc(t('share', lang))}">${SHARE_ICON}</button>`;
 
   let ingredients: string;
   if (recipe.ingredientSections && recipe.ingredientSections.length > 0) {
@@ -94,5 +114,6 @@ export function detailPage(recipe: Recipe, lang: Lang): string {
     navLeft,
     navRight,
     content,
+    pageScript: `<script>window.__RECIPE__ = ${recipePdfData(recipe)};</script>`,
   });
 }

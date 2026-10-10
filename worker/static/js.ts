@@ -5,8 +5,8 @@ export const JS = `
 // ---- Language ----
 var _lang = document.body.dataset.lang || 'de';
 var _T = {
-  de: { amount:'Menge', ingredient:'Zutat', describe_step:'Schritt beschreiben…', offline:'Offline gespeichert – wird synchronisiert', copied:'In Zwischenablage kopiert', share_fail:'Teilen fehlgeschlagen', portions:'Portionen', portion:'Portion', save:'Speichern', extract:'Extrahieren', add_ingredient:'Zutat hinzufügen', share:'Teilen', copy_link:'Link kopieren', print:'Drucken', cancel:'Abbrechen', llm_bad_json:'Private LLM hat kein gültiges JSON geliefert. Bitte erneut versuchen.', llm_not_recipe:'Private LLM hat kein erkennbares Rezept geliefert. Bitte erneut versuchen.', clipboard_fail:'Zwischenablage konnte nicht gelesen werden. Bitte Berechtigung erteilen und erneut versuchen.', discard_title:'Änderungen verwerfen?', discard_msg:'Alle nicht gespeicherten Änderungen gehen verloren.', discard_confirm:'Verwerfen', delete_title:'Rezept löschen?', delete_msg:'Diese Aktion kann nicht rückgängig gemacht werden.', delete_confirm:'Löschen', delete_error:'Fehler beim Löschen', delete_row:'Löschen' },
-  en: { amount:'Amount', ingredient:'Ingredient', describe_step:'Describe step…', offline:'Saved offline – will sync', copied:'Copied to clipboard', share_fail:'Sharing failed', portions:'Portions', portion:'Portion', save:'Save', extract:'Extract', add_ingredient:'Add ingredient', share:'Share', copy_link:'Copy link', print:'Print', cancel:'Cancel', llm_bad_json:'Private LLM did not return valid JSON. Please try again.', llm_not_recipe:'Private LLM did not return a usable recipe. Please try again.', clipboard_fail:'Could not read the clipboard. Please grant permission and try again.', discard_title:'Discard changes?', discard_msg:'All unsaved changes will be lost.', discard_confirm:'Discard', delete_title:'Delete recipe?', delete_msg:'This action cannot be undone.', delete_confirm:'Delete', delete_error:'Error deleting', delete_row:'Delete' }
+  de: { amount:'Menge', ingredient:'Zutat', describe_step:'Schritt beschreiben…', offline:'Offline gespeichert – wird synchronisiert', copied:'In Zwischenablage kopiert', share_fail:'Teilen fehlgeschlagen', portions:'Portionen', portion:'Portion', save:'Speichern', extract:'Extrahieren', add_ingredient:'Zutat hinzufügen', share:'Teilen', copy_link:'Link kopieren', print:'Drucken', cancel:'Abbrechen', pdf:'Als PDF', pdf_error:'PDF konnte nicht erstellt werden', pdf_download:'PDF-Download gestartet', llm_bad_json:'Private LLM hat kein gültiges JSON geliefert. Bitte erneut versuchen.', llm_not_recipe:'Private LLM hat kein erkennbares Rezept geliefert. Bitte erneut versuchen.', clipboard_fail:'Zwischenablage konnte nicht gelesen werden. Bitte Berechtigung erteilen und erneut versuchen.', discard_title:'Änderungen verwerfen?', discard_msg:'Alle nicht gespeicherten Änderungen gehen verloren.', discard_confirm:'Verwerfen', delete_title:'Rezept löschen?', delete_msg:'Diese Aktion kann nicht rückgängig gemacht werden.', delete_confirm:'Löschen', delete_error:'Fehler beim Löschen', delete_row:'Löschen' },
+  en: { amount:'Amount', ingredient:'Ingredient', describe_step:'Describe step…', offline:'Saved offline – will sync', copied:'Copied to clipboard', share_fail:'Sharing failed', portions:'Portions', portion:'Portion', save:'Save', extract:'Extract', add_ingredient:'Add ingredient', share:'Share', copy_link:'Copy link', print:'Print', cancel:'Cancel', pdf:'As PDF', pdf_error:'Could not create the PDF', pdf_download:'PDF download started', llm_bad_json:'Private LLM did not return valid JSON. Please try again.', llm_not_recipe:'Private LLM did not return a usable recipe. Please try again.', clipboard_fail:'Could not read the clipboard. Please grant permission and try again.', discard_title:'Discard changes?', discard_msg:'All unsaved changes will be lost.', discard_confirm:'Discard', delete_title:'Delete recipe?', delete_msg:'This action cannot be undone.', delete_confirm:'Delete', delete_error:'Error deleting', delete_row:'Delete' }
 };
 function jst(key) { return (_T[_lang] || _T.de)[key] || key; }
 
@@ -58,6 +58,235 @@ function fmt(n) {
   const r = Math.round(n * 10) / 10;
   return r % 1 === 0 ? String(r) : String(r);
 }
+
+// ---- PDF generation (self-contained, no dependencies) ----
+var PDF_BS = String.fromCharCode(92);
+var PDF_NL = String.fromCharCode(10);
+
+var PDF_W = [
+  278,333,333,333,333,333,333,278,333,333,333,333,278,278,278,278,
+  556,556,556,556,556,556,556,556,556,556,278,278,278,278,278,333,
+  333,667,667,667,667,611,722,722,278,500,667,556,833,722,722,667,
+  722,722,667,611,722,667,944,667,667,611,278,278,278,278,556,278,
+  278,556,556,500,556,278,556,556,222,222,500,222,833,556,556,556,
+  556,556,333,500,278,556,500,722,500,500,500,334,238,334,333
+];
+
+var PDF_WINANSI = {
+  8364:128, 8218:130, 402:131, 8222:132, 8230:133, 8224:134, 8225:135,
+  710:136, 8240:137, 352:138, 8249:139, 338:140, 381:142,
+  8216:145, 8217:146, 8220:147, 8221:148, 8226:149, 8211:150, 8212:151,
+  732:152, 8482:153, 353:154, 8250:155, 339:156, 382:158, 376:159
+};
+
+function pdfToWinAnsi(s) {
+  var out = '';
+  for (var i = 0; i < s.length; i++) {
+    var code = s.charCodeAt(i);
+    var byte = code < 256 ? code : (PDF_WINANSI[code] !== undefined ? PDF_WINANSI[code] : 63);
+    out += String.fromCharCode(byte);
+  }
+  return out;
+}
+
+function pdfEscape(s) {
+  var out = '';
+  for (var i = 0; i < s.length; i++) {
+    var c = s.charAt(i);
+    var code = c.charCodeAt(0);
+    if (c === PDF_BS) out += PDF_BS + PDF_BS;
+    else if (c === '(') out += PDF_BS + '(';
+    else if (c === ')') out += PDF_BS + ')';
+    else if (code < 32) {
+      var oct = code.toString(8);
+      while (oct.length < 3) oct = '0' + oct;
+      out += PDF_BS + oct;
+    } else out += c;
+  }
+  return out;
+}
+
+function pdfCharWidth(c) {
+  var code = c.charCodeAt(0);
+  if (code >= 32 && code <= 126) return PDF_W[code - 32];
+  var m = { 'ä':556,'ö':556,'ü':556,'Ä':667,'Ö':722,'Ü':722,'ß':500,
+    'é':556,'è':556,'ê':556,'à':556,'â':556,'ç':500,'ñ':556,'í':222,'ó':556,'ú':556,
+    '…':300,'–':500,'—':700,'•':300 };
+  return m[c] !== undefined ? m[c] : 556;
+}
+
+function pdfTextWidth(s, size, bold) {
+  var scale = size / 1000 * (bold ? 1.06 : 1);
+  var w = 0;
+  for (var i = 0; i < s.length; i++) w += pdfCharWidth(s.charAt(i));
+  return w * scale;
+}
+
+function pdfWrap(text, size, bold, maxWidth) {
+  var words = text.split(' ');
+  var lines = [];
+  var cur = '';
+  for (var i = 0; i < words.length; i++) {
+    var w = words[i];
+    var test = cur ? cur + ' ' + w : w;
+    if (!cur || pdfTextWidth(test, size, bold) <= maxWidth) cur = test;
+    else { lines.push(cur); cur = w; }
+  }
+  if (cur) lines.push(cur);
+  return lines.length ? lines : [''];
+}
+
+function pdfSlug(s) {
+  return String(s).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60) || 'rezept';
+}
+
+function pdfDownload(blob, filename) {
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+}
+
+function pdfBlob(pdfString) {
+  var bytes = new Uint8Array(pdfString.length);
+  for (var i = 0; i < pdfString.length; i++) bytes[i] = pdfString.charCodeAt(i) & 255;
+  return new Blob([bytes], { type: 'application/pdf' });
+}
+
+function pdfAssemble(pages) {
+  var PAGE_W = 595, PAGE_H = 842;
+  var out = '%PDF-1.4' + PDF_NL + '%' + String.fromCharCode(226) + String.fromCharCode(227) + String.fromCharCode(207) + String.fromCharCode(211) + PDF_NL;
+  var offsets = [];
+  function addObj(num, body) {
+    offsets[num] = out.length;
+    out += num + ' 0 obj' + PDF_NL + body + PDF_NL + 'endobj' + PDF_NL;
+  }
+  var n = pages.length;
+  var total = 4 + n * 2;
+  var contents = [];
+  for (var i = 0; i < n; i++) contents[i] = pages[i].join(PDF_NL);
+  addObj(1, '<< /Type /Catalog /Pages 2 0 R >>');
+  var kids = '';
+  for (var a = 0; a < n; a++) kids += (5 + a * 2) + ' 0 R ';
+  addObj(2, '<< /Type /Pages /Kids [' + kids + '] /Count ' + n + ' >>');
+  addObj(3, '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>');
+  addObj(4, '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>');
+  for (var b = 0; b < n; b++) {
+    addObj(5 + b * 2, '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ' + PAGE_W + ' ' + PAGE_H + '] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents ' + (6 + b * 2) + ' 0 R >>');
+    addObj(6 + b * 2, '<< /Length ' + contents[b].length + ' >>' + PDF_NL + 'stream' + PDF_NL + contents[b] + PDF_NL + 'endstream');
+  }
+  var xrefOffset = out.length;
+  var xref = 'xref' + PDF_NL + '0 ' + (total + 1) + PDF_NL + '0000000000 65535 f ' + PDF_NL;
+  for (var c = 1; c <= total; c++) {
+    var off = String(offsets[c]);
+    while (off.length < 10) off = '0' + off;
+    xref += off + ' 00000 n ' + PDF_NL;
+  }
+  xref += 'trailer' + PDF_NL + '<< /Size ' + (total + 1) + ' /Root 1 0 R >>' + PDF_NL + 'startxref' + PDF_NL + xrefOffset + PDF_NL + '%%EOF';
+  return out + xref;
+}
+
+function buildRecipePdf(recipe) {
+  var PAGE_W = 595;
+  var MARGIN = 50;
+  var TOP = 842 - 55;
+  var BOTTOM = 50;
+  var MAXW = PAGE_W - MARGIN * 2;
+  var X = MARGIN;
+  var UNIT = {
+    de: { g:'g', kg:'kg', ml:'ml', l:'l', tbsp:'EL', tsp:'TL', cup:'Tasse', piece:'Stk', pck:'Päck.', prise:'Prise', bunch:'Bd.', can:'Dose' },
+    en: { g:'g', kg:'kg', ml:'ml', l:'l', tbsp:'tbsp', tsp:'tsp', cup:'cup', piece:'pc', pck:'pack', prise:'pinch', bunch:'bunch', can:'can' }
+  };
+  var L = UNIT[_lang] || UNIT.de;
+  var en = _lang === 'en';
+  var C_TITLE = '0 0 0';
+  var C_META = '0.45 0.45 0.45';
+  var C_LABEL = '0.40 0.24 0.10';
+  var C_BODY = '0.15 0.15 0.15';
+
+  var pages = [];
+  var cur = [];
+  var y = TOP;
+
+  function newPage() { if (cur.length) pages.push(cur); cur = []; y = TOP; }
+  function ensure(space) { if (y - space < BOTTOM) newPage(); }
+  function putText(text, size, bold, color) {
+    cur.push(color + ' rg');
+    cur.push('BT /' + (bold ? 'F2' : 'F1') + ' ' + size + ' Tf ' + X + ' ' + y.toFixed(1) + ' Td (' + pdfEscape(pdfToWinAnsi(text)) + ') Tj ET');
+  }
+  function drawLines(lines, size, bold, color) {
+    var leading = size * 1.3;
+    for (var i = 0; i < lines.length; i++) {
+      ensure(leading);
+      putText(lines[i], size, bold, color);
+      y -= leading;
+    }
+  }
+  function sectionLabel(text) {
+    if (y - 13 * 1.3 - 11 * 1.3 < BOTTOM) newPage();
+    putText(text, 13, true, C_LABEL);
+    y -= 13 * 1.3 + 6;
+  }
+
+  drawLines(pdfWrap(recipe.name, 22, true, MAXW), 22, true, C_TITLE);
+  y -= 6;
+
+  var meta = recipe.portions + ' ' + (recipe.portions === 1 ? (en ? 'portion' : 'Portion') : (en ? 'portions' : 'Portionen'));
+  if (recipe.time) meta += '    ' + recipe.time;
+  drawLines([meta], 11, false, C_META);
+  y -= 10;
+
+  sectionLabel(en ? 'Ingredients' : 'Zutaten');
+  var sections = recipe.sections || [];
+  for (var s = 0; s < sections.length; s++) {
+    var sec = sections[s];
+    if (sec.name) drawLines(pdfWrap(sec.name, 11, true, MAXW), 11, true, C_META);
+    for (var k = 0; k < sec.items.length; k++) {
+      var it = sec.items[k];
+      var qty = it.amount ? fmt(it.amount) + (it.unit ? ' ' + (L[it.unit] || it.unit) : '') : '';
+      var text = qty ? qty + '   ' + it.name : it.name;
+      if (it.remark) text += '  (' + it.remark + ')';
+      drawLines(pdfWrap(text, 11, false, MAXW), 11, false, C_BODY);
+    }
+  }
+  y -= 8;
+
+  sectionLabel(en ? 'Preparation' : 'Zubereitung');
+  var steps = recipe.steps || [];
+  for (var j = 0; j < steps.length; j++) {
+    drawLines(pdfWrap((j + 1) + '.   ' + steps[j], 11, false, MAXW), 11, false, C_BODY);
+  }
+
+  if (cur.length) pages.push(cur);
+  if (!pages.length) pages.push(['0 0 0 rg']);
+
+  return pdfBlob(pdfAssemble(pages));
+}
+
+window.buildRecipePdf = function () {
+  var recipe = window.__RECIPE__;
+  if (!recipe) return null;
+  return buildRecipePdf(recipe);
+};
+
+window.shareRecipePdf = function () {
+  var recipe = window.__RECIPE__;
+  if (!recipe) { toast(jst('pdf_error')); return; }
+  var blob;
+  try { blob = buildRecipePdf(recipe); } catch (e) { toast(jst('pdf_error')); return; }
+  var filename = pdfSlug(recipe.name) + '.pdf';
+  var file = new File([blob], filename, { type: 'application/pdf' });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) {
+    navigator.share({ files: [file], title: recipe.name }).catch(function () {});
+  } else {
+    pdfDownload(blob, filename);
+    toast(jst('pdf_download'));
+  }
+};
 
 function esc(s) {
   return String(s)
@@ -394,50 +623,6 @@ function initDetail() {
     });
   };
 
-  window.shareRecipe = function () {
-    var title = document.title;
-    var url = window.location.href;
-    if (navigator.share) {
-      navigator.share({ title: title, url: url }).catch(function () {});
-      return;
-    }
-    // Fallback: small action sheet with copy-link and print
-    var overlay = document.createElement('div');
-    overlay.className = 'dialog-overlay';
-    var sheet = document.createElement('div');
-    sheet.className = 'dialog-sheet';
-    function closeShare() { overlay.remove(); sheet.remove(); }
-    overlay.addEventListener('click', function (e) { if (e.target === overlay) closeShare(); });
-    var ti = document.createElement('div');
-    ti.className = 'dialog-title';
-    ti.textContent = jst('share');
-    var copyBtn = document.createElement('button');
-    copyBtn.className = 'dialog-action btn btn-primary';
-    copyBtn.textContent = jst('copy_link');
-    copyBtn.onclick = function () {
-      navigator.clipboard.writeText(url).then(function () {
-        closeShare();
-        toast(jst('copied'));
-      }).catch(function () {
-        closeShare();
-        toast(jst('share_fail'));
-      });
-    };
-    var printBtn = document.createElement('button');
-    printBtn.className = 'dialog-action btn btn-primary';
-    printBtn.textContent = jst('print');
-    printBtn.onclick = function () { closeShare(); window.print(); };
-    var cancelBtn = document.createElement('button');
-    cancelBtn.className = 'dialog-action dialog-action-cancel';
-    cancelBtn.textContent = jst('cancel');
-    cancelBtn.onclick = closeShare;
-    sheet.appendChild(ti);
-    sheet.appendChild(copyBtn);
-    sheet.appendChild(printBtn);
-    sheet.appendChild(cancelBtn);
-    document.body.appendChild(overlay);
-    document.body.appendChild(sheet);
-  };
 }
 
 // ---- New Recipe ----

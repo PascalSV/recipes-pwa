@@ -42,6 +42,7 @@ export function pageLayout(opts: {
   navLeft?: string;
   navRight?: string;
   content: string;
+  pageScript?: string;
 }): string {
   return `<!DOCTYPE html>
 <html lang="${opts.lang}">
@@ -67,9 +68,10 @@ ${THEME_SCRIPT}
   </div>
 </header>
 <div class="page">
-${opts.content}
-</div>
-<script src="/app.js"></script>
+  ${opts.content}
+  </div>
+  ${opts.pageScript ?? ''}
+  <script src="/app.js"></script>
 </body>
 </html>`;
 }
