@@ -85,7 +85,10 @@ test.describe('Step drag reorder — desktop pointer', () => {
     expect(await stepTexts(page)).toEqual(REORDERED);
     await page.click('#save-btn');
     await expect(page).toHaveURL(`/recipe/${recipeId}`);
-    expect(await page.locator('.step-text').allTextContents()).toEqual(REORDERED);
+    // toHaveURL resolves the moment the URL changes, but the detail page's steps can
+    // land a tick later (SW/network round-trip under full-suite load). toHaveText
+    // auto-waits for the rendered steps — and still times out if the save lost them.
+    await expect(page.locator('.step-text')).toHaveText(REORDERED);
   });
 
   test('reordering then pressing Back asks for confirmation', async ({ page }) => {

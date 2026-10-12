@@ -970,24 +970,7 @@ function populateForm(recipe) {
   }
 }
 
-// ---- Swipe-to-delete for ingredient rows ----
-var _openSwipe = null;
-
-function closeAllSwipes(except) {
-  if (_openSwipe && _openSwipe !== except) {
-    var r = _openSwipe.querySelector('.ing-editor-row, .step-row');
-    if (r) { r.style.transition = 'transform .25s ease'; r.style.transform = ''; }
-    _openSwipe._swOpen = false;
-    _openSwipe = null;
-  }
-}
-
-document.addEventListener('touchstart', function(e) {
-  if (_openSwipe && !_openSwipe.contains(e.target)) closeAllSwipes(null);
-}, { passive: true });
-
-// Drag-to-reorder for editor rows. Scoped to the grip handle so it never
-// competes with the row's horizontal swipe-to-delete. Rows are reordered live
+// Drag-to-reorder for editor rows. Scoped to the grip handle. Rows are reordered live
 // within their own section list (no moving between sections).
 // rowClass picks which siblings are in scope (ingredients: .ing-swipe-wrap,
 // steps: .step-swipe-wrap); onSettled runs once when the drag is released
@@ -1042,7 +1025,6 @@ function makeRowDraggable(handle, wrap, rowClass, onSettled) {
     if (e.button != null && e.button !== 0) return;
     if (!wrap.parentNode) return;
     dragging = true;
-    closeAllSwipes(null);
     wrap.classList.add('dragging');
     document.body.style.userSelect = 'none';
     document.addEventListener('pointermove', onMove, true);
@@ -1086,57 +1068,13 @@ function createIngRow(ing) {
   var delBtn = document.createElement('button');
   delBtn.type = 'button';
   delBtn.className = 'ing-swipe-delete';
-  delBtn.textContent = jst('delete_row');
+  delBtn.textContent = '×';
+  delBtn.setAttribute('aria-label', jst('delete_row'));
   delBtn.addEventListener('click', function() { wrap.remove(); });
+  div.appendChild(delBtn);
 
   wrap.appendChild(div);
-  wrap.appendChild(delBtn);
   makeRowDraggable(handle, wrap);
-
-  var DEL_W = 80;
-  var swStartX, swStartY, swTracking, swBase;
-
-  div.addEventListener('touchstart', function(e) {
-    if (e.touches.length !== 1) return;
-    if (e.target.closest && e.target.closest('.ing-drag-handle')) { swTracking = 'skip'; return; }
-    swStartX = e.touches[0].clientX;
-    swStartY = e.touches[0].clientY;
-    swTracking = null;
-    swBase = wrap._swOpen ? -DEL_W : 0;
-    div.style.transition = 'none';
-  }, { passive: true });
-
-  div.addEventListener('touchmove', function(e) {
-    if (e.touches.length !== 1) return;
-    if (swTracking === 'skip') return;
-    var dx = e.touches[0].clientX - swStartX;
-    var dy = e.touches[0].clientY - swStartY;
-    if (!swTracking) {
-      if (Math.abs(dx) < 5 && Math.abs(dy) < 5) return;
-      swTracking = Math.abs(dx) >= Math.abs(dy) ? 'h' : 'v';
-    }
-    if (swTracking !== 'h') return;
-    e.preventDefault();
-    var offset = Math.max(-DEL_W, Math.min(0, swBase + dx));
-    div.style.transform = 'translateX(' + offset + 'px)';
-  }, { passive: false });
-
-  div.addEventListener('touchend', function(e) {
-    if (swTracking !== 'h') return;
-    var dx = e.changedTouches[0].clientX - swStartX;
-    div.style.transition = 'transform .25s ease';
-    var open = wrap._swOpen ? dx < DEL_W / 2 : -dx >= DEL_W / 2;
-    if (open) {
-      closeAllSwipes(wrap);
-      div.style.transform = 'translateX(-' + DEL_W + 'px)';
-      wrap._swOpen = true;
-      _openSwipe = wrap;
-    } else {
-      div.style.transform = '';
-      wrap._swOpen = false;
-      if (_openSwipe === wrap) _openSwipe = null;
-    }
-  }, { passive: true });
 
   return wrap;
 }
@@ -1202,7 +1140,8 @@ function createStepRow(text, idx) {
   var delBtn = document.createElement('button');
   delBtn.type = 'button';
   delBtn.className = 'ing-swipe-delete';
-  delBtn.textContent = jst('delete_row');
+  delBtn.textContent = '×';
+  delBtn.setAttribute('aria-label', jst('delete_row'));
   delBtn.addEventListener('click', function() { wrap.remove(); if (window.renumberSteps) window.renumberSteps(); });
 
   var row = document.createElement('div');
@@ -1228,54 +1167,9 @@ function createStepRow(text, idx) {
   row.appendChild(handle);
   row.appendChild(num);
   row.appendChild(ta);
-  wrap.appendChild(delBtn);
+  row.appendChild(delBtn);
   wrap.appendChild(row);
   makeRowDraggable(handle, wrap, 'step-swipe-wrap', function() { if (window.renumberSteps) window.renumberSteps(); });
-
-  var DEL_W = 80;
-  var swStartX, swStartY, swTracking, swBase;
-
-  row.addEventListener('touchstart', function(e) {
-    if (e.touches.length !== 1) return;
-    if (e.target.closest && e.target.closest('.ing-drag-handle')) { swTracking = 'skip'; return; }
-    swStartX = e.touches[0].clientX;
-    swStartY = e.touches[0].clientY;
-    swTracking = null;
-    swBase = wrap._swOpen ? -DEL_W : 0;
-    row.style.transition = 'none';
-  }, { passive: true });
-
-  row.addEventListener('touchmove', function(e) {
-    if (e.touches.length !== 1) return;
-    if (swTracking === 'skip') return;
-    var dx = e.touches[0].clientX - swStartX;
-    var dy = e.touches[0].clientY - swStartY;
-    if (!swTracking) {
-      if (Math.abs(dx) < 5 && Math.abs(dy) < 5) return;
-      swTracking = Math.abs(dx) >= Math.abs(dy) ? 'h' : 'v';
-    }
-    if (swTracking !== 'h') return;
-    e.preventDefault();
-    var offset = Math.max(-DEL_W, Math.min(0, swBase + dx));
-    row.style.transform = 'translateX(' + offset + 'px)';
-  }, { passive: false });
-
-  row.addEventListener('touchend', function(e) {
-    if (swTracking !== 'h') return;
-    var dx = e.changedTouches[0].clientX - swStartX;
-    row.style.transition = 'transform .25s ease';
-    var open = wrap._swOpen ? dx < DEL_W / 2 : -dx >= DEL_W / 2;
-    if (open) {
-      closeAllSwipes(wrap);
-      row.style.transform = 'translateX(-' + DEL_W + 'px)';
-      wrap._swOpen = true;
-      _openSwipe = wrap;
-    } else {
-      row.style.transform = '';
-      wrap._swOpen = false;
-      if (_openSwipe === wrap) _openSwipe = null;
-    }
-  }, { passive: true });
 
   return wrap;
 }
